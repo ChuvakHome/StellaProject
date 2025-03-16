@@ -7,19 +7,19 @@ This repository contains the code of typechecker for simple functional programmi
   * #pairs & #tuples
   * #records
   * #let-bindings
-  * type-ascriptions
-  * sum-types
-  * lists
-  * variants
+  * #type-ascriptions
+  * #sum-types
+  * #lists
+  * #variants
   * #fixpoint-combinator
   * #natural-literals
   * #nullary-functions & #multiparameter-functions
 - errors:
   * ERROR_MISSING_MAIN
   * ERROR_MISSING_MAIN
-	* ERROR_UNDEFINED_VARIABLE
-	* ERROR_UNEXPECTED_TYPE_FOR_EXPRESSION
-	* ERROR_NOT_A_FUNCTION
+  * ERROR_UNDEFINED_VARIABLE
+  * ERROR_UNEXPECTED_TYPE_FOR_EXPRESSION
+  * ERROR_NOT_A_FUNCTION
 	* ERROR_NOT_A_TUPLE
 	* ERROR_NOT_A_RECORD
 	* ERROR_NOT_A_LIST
@@ -45,8 +45,7 @@ This repository contains the code of typechecker for simple functional programmi
 	* ERROR_DUPLICATE_RECORD_FIELDS
 	* ERROR_DUPLICATE_RECORD_TYPE_FIELDS
 	* ERROR_DUPLICATE_VARIANT_TYPE_FIELDS
-	
-	* ERROR_INCORRECT_ARITY_OF_MAIN
+  * ERROR_INCORRECT_ARITY_OF_MAIN
 	* ERROR_INCORRECT_NUMBER_OF_ARGUMENTS
 	* ERROR_UNEXPECTED_NUMBER_OF_PARAMETERS_IN_LAMBDA
 
