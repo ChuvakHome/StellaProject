@@ -14,6 +14,14 @@ This repository contains the code of typechecker for simple functional programmi
   * #fixpoint-combinator
   * #natural-literals
   * #nullary-functions & #multiparameter-functions
+  * #structural-patterns, not all, availables patterns are:
+    + variables
+    + natural literals
+    + succ
+    + booleans
+    + unit
+    + sum-types
+    + variants
 - errors:
 	* ERROR_MISSING_MAIN
 	* ERROR_MISSING_MAIN
