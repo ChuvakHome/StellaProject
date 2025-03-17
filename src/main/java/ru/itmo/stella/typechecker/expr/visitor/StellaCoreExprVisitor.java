@@ -2,8 +2,10 @@ package ru.itmo.stella.typechecker.expr.visitor;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ru.itmo.stella.lang.Absyn.ABinding;
 import ru.itmo.stella.lang.Absyn.AMatchCase;
@@ -43,6 +45,8 @@ import ru.itmo.stella.lang.Absyn.Var;
 import ru.itmo.stella.lang.Absyn.Variant;
 import ru.itmo.stella.typechecker.BaseStellaTypechecker.StellaTypeVisitor;
 import ru.itmo.stella.typechecker.StellaTypechecker;
+import ru.itmo.stella.typechecker.exception.StellaException;
+import ru.itmo.stella.typechecker.exception.record.StellaDuplicateRecordFieldsException;
 import ru.itmo.stella.typechecker.expr.AbstractionExpr;
 import ru.itmo.stella.typechecker.expr.ApplicationExpr;
 import ru.itmo.stella.typechecker.expr.BoolConstExpr;
@@ -80,16 +84,16 @@ public class StellaCoreExprVisitor extends StellaBaseExprVisitor {
 	}
 	
 	@Override
-	public StellaExpression visit(If p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression condition = p.expr_1.accept(this, ctx);
-		StellaExpression trueExpr = p.expr_2.accept(this, ctx);
-		StellaExpression falseExpr = p.expr_3.accept(this, ctx);
+	public StellaExpression doVisit(If p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression condition = p.expr_1.accept(this, ctx).get();
+		StellaExpression trueExpr = p.expr_2.accept(this, ctx).get();
+		StellaExpression falseExpr = p.expr_3.accept(this, ctx).get();
 		
 		return new IfThenStellaExpr(condition, trueExpr, falseExpr);
 	}
 
 	@Override
-	public StellaExpression visit(Abstraction p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaExpression doVisit(Abstraction p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		Map<String, StellaType> funArgs = new LinkedHashMap<>();
 		
 		for (ParamDecl paramDecl: p.listparamdecl_) {
@@ -97,25 +101,25 @@ public class StellaCoreExprVisitor extends StellaBaseExprVisitor {
 			
 			funArgs.put(
 						param.stellaident_,
-						param.type_.accept(typeVisitor, ctx.getExpressionContext())
+						param.type_.accept(typeVisitor, ctx.getExpressionContext()).get()
 					);
 		}
 		
-		StellaExpression fnBody = p.expr_.accept(this, ctx);
+		StellaExpression fnBody = p.expr_.accept(this, ctx).get();
 		
 		return new AbstractionExpr(funArgs, fnBody);
 	}
 	
 	@Override
-	public StellaExpression visit(Application p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression abstraction = p.expr_.accept(this, ctx);
+	public StellaExpression doVisit(Application p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression abstraction = p.expr_.accept(this, ctx).get();
 		
 		int exprCount = p.listexpr_.size();
 		
 		List<StellaExpression> argsList = new ArrayList<>(exprCount);
 		
 		for (Expr expr: p.listexpr_)
-			argsList.add(expr.accept(this, ctx));
+			argsList.add(expr.accept(this, ctx).get());
 		
 		return new ApplicationExpr(
 				abstraction,
@@ -124,181 +128,206 @@ public class StellaCoreExprVisitor extends StellaBaseExprVisitor {
 	}
 
 	@Override
-	public StellaExpression visit(Succ p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression argument = p.expr_.accept(this, ctx);
+	public StellaExpression doVisit(Succ p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression argument = p.expr_.accept(this, ctx).get();
 		
 		return new SuccExpr(argument);
 	}
 
 	@Override
-	public StellaExpression visit(Pred p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression argument = p.expr_.accept(this, ctx);
+	public StellaExpression doVisit(Pred p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression argument = p.expr_.accept(this, ctx).get();
 		
 		return new PredExpr(argument);
 	}
 
 	@Override
-	public StellaExpression visit(IsZero p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression argument = p.expr_.accept(this, ctx);
+	public StellaExpression doVisit(IsZero p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression argument = p.expr_.accept(this, ctx).get();
 		
 		return new IsZeroExpr(argument);
 	}
 
 	@Override
-	public StellaExpression visit(NatRec p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression itersCount = p.expr_1.accept(this, ctx);
-		StellaExpression initVal = p.expr_2.accept(this, ctx);
-		StellaExpression iterFunc = p.expr_3.accept(this, ctx);
+	public StellaExpression doVisit(NatRec p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression itersCount = p.expr_1.accept(this, ctx).get();
+		StellaExpression initVal = p.expr_2.accept(this, ctx).get();
+		StellaExpression iterFunc = p.expr_3.accept(this, ctx).get();
 		
 		return new NatRecExpr(itersCount, initVal, iterFunc);
 	}
 
 	@Override
-	public StellaExpression visit(ConstTrue p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaExpression doVisit(ConstTrue p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return new BoolConstExpr(true);
 	}
 
 	@Override
-	public StellaExpression visit(ConstFalse p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaExpression doVisit(ConstFalse p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return new BoolConstExpr(false);
 	}
 
 	@Override
-	public StellaExpression visit(ConstUnit p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaExpression doVisit(ConstUnit p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return new UnitConstExpr();
 	}
 
 	@Override
-	public StellaExpression visit(ConstInt p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaExpression doVisit(ConstInt p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return new NatConstExpr(p.integer_);
 	}
 
 	@Override
-	public StellaExpression visit(Var p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaExpression doVisit(Var p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return new VarExpr(p.stellaident_);
 	}
 	
 	@Override
-	public StellaExpression visit(TypeAsc p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression expr = p.expr_.accept(this, ctx);
-		StellaType type = p.type_.accept(typeVisitor, ctx.getExpressionContext());
+	public StellaExpression doVisit(TypeAsc p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
+		StellaType type = p.type_.accept(typeVisitor, ctx.getExpressionContext()).get();
 		
 		return new TypeAscExpr(expr, type);
 	}
 	
 	@Override
-	public StellaExpression visit(ru.itmo.stella.lang.Absyn.List p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaExpression doVisit(ru.itmo.stella.lang.Absyn.List p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		List<StellaExpression> listElements = new ArrayList<>();
 		
 		for (Expr expr: p.listexpr_)
-			listElements.add(expr.accept(this, ctx));
+			listElements.add(expr.accept(this, ctx).get());
 		
 		return new ListExpr(listElements);
 	}
 	
 	@Override
-	public StellaExpression visit(ConsList p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression head = p.expr_1.accept(this, ctx);
-		StellaExpression tail = p.expr_2.accept(this, ctx);
+	public StellaExpression doVisit(ConsList p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression head = p.expr_1.accept(this, ctx).get();
+		StellaExpression tail = p.expr_2.accept(this, ctx).get();
 		
 		return new ConsListExpr(head, tail);
 	}
 
 	@Override
-	public StellaExpression visit(Head p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression expr = p.expr_.accept(this, ctx);
+	public StellaExpression doVisit(Head p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
 		
 		return new HeadExpr(expr);
 	}
 
 	@Override
-	public StellaExpression visit(IsEmpty p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression expr = p.expr_.accept(this, ctx);
+	public StellaExpression doVisit(IsEmpty p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
 		
 		return new IsEmptyExpr(expr);
 	}
 
 	@Override
-	public StellaExpression visit(Tail p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression expr = p.expr_.accept(this, ctx);
+	public StellaExpression doVisit(Tail p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
 		
 		return new TailExpr(expr);
 	}
 	
 	@Override
-	public StellaExpression visit(Tuple p, StellaTypechecker.TypecheckContext ctx) {
-		return new TupleExpr(
-					p.listexpr_.stream().map(expr -> expr.accept(this, ctx)).toList()
-				);
+	public StellaExpression doVisit(Tuple p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		List<StellaExpression> tupleComponents = new ArrayList<>();
+		
+		for (Expr expr: p.listexpr_)
+			tupleComponents.add(expr.accept(this, ctx).get());
+		
+		return new TupleExpr(tupleComponents);
 	}
 	
 	@Override
-	public StellaExpression visit(DotTuple p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression expr = p.expr_.accept(this, ctx);
+	public StellaExpression doVisit(DotTuple p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
 		int number = p.integer_;
 		
 		return new DotTupleExpr(expr, number);
 	}
 	
 	@Override
-	public StellaExpression visit(ru.itmo.stella.lang.Absyn.Record p, StellaTypechecker.TypecheckContext ctx) {
-		Map<String, StellaExpression> fields = new LinkedHashMap<>(p.listbinding_.size());
+	public StellaExpression doVisit(ru.itmo.stella.lang.Absyn.Record p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		Map<String, StellaExpression> distinctFields = new LinkedHashMap<>(p.listbinding_.size());
+		List<Map.Entry<String, StellaExpression>> fieldsValuesList = new ArrayList<>(p.listbinding_.size());
+		
+		Set<String> duplicateRecordFields = new LinkedHashSet<>();
 		
 		for (Binding bind: p.listbinding_) {
 			ABinding abind = (ABinding) bind;
 			
-			fields.put(abind.stellaident_, abind.expr_.accept(this, ctx));
+			String fieldName = abind.stellaident_;
+			StellaExpression fieldValue = abind.expr_.accept(this, ctx).get();
+			
+			if (distinctFields.containsKey(fieldName))
+				duplicateRecordFields.add(fieldName);
+				
+			distinctFields.put(fieldName, fieldValue);
+			fieldsValuesList.add(Map.entry(fieldName, fieldValue));
 		}
 		
-		return new RecordExpr(fields);
+		if (duplicateRecordFields.isEmpty())
+			return new RecordExpr(distinctFields);
+		else {
+			String recordStr = String.format(
+						"{ %s }",
+						String.join(
+								", ",
+								fieldsValuesList.stream().map(entry -> entry.getKey() + " = " + entry.getValue() ).toList()
+							)
+					);
+			
+			throw new StellaDuplicateRecordFieldsException(duplicateRecordFields, recordStr);
+		}
 	}
 	
 	@Override
-	public StellaExpression visit(DotRecord p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression expr = p.expr_.accept(this, ctx);
+	public StellaExpression doVisit(DotRecord p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
 		String field = p.stellaident_;
 		
 		return new DotRecordExpr(expr, field);
 	}
 	
 	@Override
-	public StellaExpression visit(Fix p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression expr = p.expr_.accept(this, ctx);
+	public StellaExpression doVisit(Fix p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
 		
 		return new FixExpr(expr);
 	}
 	
 	@Override
-	public StellaExpression visit(Inl p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression expr = p.expr_.accept(this, ctx);
+	public StellaExpression doVisit(Inl p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
 		
 		return new InlExpr(expr);
 	}
 	
 	@Override
-	public StellaExpression visit(Inr p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression expr = p.expr_.accept(this, ctx);
+	public StellaExpression doVisit(Inr p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
 		
 		return new InrExpr(expr);
 	}
 	
 	@Override
-	public StellaExpression visit(Let p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaExpression doVisit(Let p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		APatternBinding pb = (APatternBinding) p.listpatternbinding_.getFirst();
 		
 		PatternVar patternVar = (PatternVar) pb.pattern_;
 		
 		String replaceName = patternVar.stellaident_;
-		StellaExpression subexpr = pb.expr_.accept(this, ctx);
+		StellaExpression subexpr = pb.expr_.accept(this, ctx).get();
 		
-		StellaExpression expr = p.expr_.accept(this, ctx);
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
 		
 		return new LetExpr(replaceName, subexpr, expr);
 	}
 	
 	@Override
-	public StellaExpression visit(Match p, StellaTypechecker.TypecheckContext ctx) {
-		StellaExpression matchExpr = p.expr_.accept(this, ctx);
+	public StellaExpression doVisit(Match p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression matchExpr = p.expr_.accept(this, ctx).get();
 		
 		List<MatchExpr.MatchCase> matchExprCases = new ArrayList<>();
 		
@@ -308,7 +337,7 @@ public class StellaCoreExprVisitor extends StellaBaseExprVisitor {
 			AMatchCase acase = (AMatchCase) matchCase;
 			
 			PatternExpr patternExpr = acase.pattern_.accept(patternVisitor, ctx);
-			StellaExpression matchCaseExpr = acase.expr_.accept(this, ctx);
+			StellaExpression matchCaseExpr = acase.expr_.accept(this, ctx).get();
 			
 			matchExprCases.add(new MatchExpr.MatchCase(patternExpr, matchCaseExpr));
 		}
@@ -317,9 +346,9 @@ public class StellaCoreExprVisitor extends StellaBaseExprVisitor {
 	}
 	
 	@Override
-	public StellaExpression visit(Variant p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaExpression doVisit(Variant p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		String label = p.stellaident_;
-		StellaExpression expr = ((SomeExprData) p.exprdata_).expr_.accept(this, ctx);
+		StellaExpression expr = ((SomeExprData) p.exprdata_).expr_.accept(this, ctx).get();
 		
 		return new VariantExpr(label, expr);
 	}
