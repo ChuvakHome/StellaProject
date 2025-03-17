@@ -61,7 +61,7 @@ import ru.itmo.stella.typechecker.BaseStellaTypechecker.StellaTypeVisitor;
 import ru.itmo.stella.typechecker.StellaTypechecker;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.expr.StellaExpression;
-import ru.itmo.stella.typechecker.util.ThrowingOptional;
+import ru.itmo.stella.typechecker.util.StellaOptional;
 
 public class StellaBaseExprVisitor implements StellaExprVisitor {
 	protected StellaTypeVisitor typeVisitor;
@@ -71,21 +71,21 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 	
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Sequence p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Sequence p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Assign p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Assign p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(If p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(If p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -94,11 +94,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Let p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Let p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -107,51 +107,51 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(LetRec p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(LetRec p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(TypeAbstraction p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(TypeAbstraction p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(LessThan p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(LessThan p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(LessThanOrEqual p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(LessThanOrEqual p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(GreaterThan p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(GreaterThan p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(GreaterThanOrEqual p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(GreaterThanOrEqual p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Equal p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Equal p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(NotEqual p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(NotEqual p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(TypeAsc p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(TypeAsc p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -160,16 +160,16 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(TypeCast p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(TypeCast p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Abstraction p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Abstraction p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -178,11 +178,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Variant p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Variant p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -191,11 +191,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Match p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Match p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -204,11 +204,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(List p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(List p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -217,51 +217,51 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Add p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Add p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Subtract p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Subtract p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(LogicOr p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(LogicOr p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Multiply p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Multiply p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Divide p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Divide p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(LogicAnd p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(LogicAnd p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Ref p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Ref p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Deref p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Deref p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Application p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Application p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -270,16 +270,16 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(TypeApplication p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(TypeApplication p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(DotRecord p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(DotRecord p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -288,11 +288,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(DotTuple p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(DotTuple p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -301,11 +301,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Tuple p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Tuple p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -314,11 +314,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Record p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Record p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -327,11 +327,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(ConsList p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(ConsList p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -340,11 +340,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Head p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Head p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -353,11 +353,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(IsEmpty p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(IsEmpty p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -366,11 +366,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Tail p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Tail p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -379,36 +379,36 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Panic p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Panic p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Throw p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Throw p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(TryCatch p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(TryCatch p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(TryWith p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(TryWith p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(TryCastAs p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(TryCastAs p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Inl p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Inl p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -417,11 +417,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Inr p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Inr p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -430,11 +430,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Succ p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Succ p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -443,16 +443,16 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(LogicNot p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(LogicNot p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Pred p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Pred p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -461,11 +461,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(IsZero p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(IsZero p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -474,11 +474,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Fix p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Fix p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -487,11 +487,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(NatRec p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(NatRec p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -500,21 +500,21 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Fold p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Fold p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Unfold p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Unfold p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(ConstTrue p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(ConstTrue p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -523,11 +523,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(ConstFalse p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(ConstFalse p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -536,11 +536,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(ConstUnit p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(ConstUnit p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -549,11 +549,11 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(ConstInt p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(ConstInt p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	
@@ -562,16 +562,16 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(ConstMemory p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(ConstMemory p, StellaTypechecker.TypecheckContext ctx) {
 		return null;
 	}
 
 	@Override
-	public ThrowingOptional<StellaExpression> visit(Var p, StellaTypechecker.TypecheckContext ctx) {
+	public StellaOptional<StellaExpression> visit(Var p, StellaTypechecker.TypecheckContext ctx) {
 		try {
-			return ThrowingOptional.of(doVisit(p, ctx));
+			return StellaOptional.of(doVisit(p, ctx));
 		} catch (StellaException e) {
-			return ThrowingOptional.of(StellaExpression.class, e);
+			return StellaOptional.of(StellaExpression.class, e);
 		}
 	}
 	

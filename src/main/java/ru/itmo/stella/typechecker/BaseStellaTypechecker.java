@@ -60,7 +60,7 @@ import ru.itmo.stella.typechecker.type.StellaSumType;
 import ru.itmo.stella.typechecker.type.StellaTupleType;
 import ru.itmo.stella.typechecker.type.StellaType;
 import ru.itmo.stella.typechecker.type.StellaVariantType;
-import ru.itmo.stella.typechecker.util.ThrowingOptional;
+import ru.itmo.stella.typechecker.util.StellaOptional;
 
 public class BaseStellaTypechecker implements StellaTypechecker {
 	private ExpressionContext context = ExpressionContext.EMPTY_CONTEXT;
@@ -142,7 +142,7 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 			return super.visit(p, errorsList);
 		}
 		
-		protected ThrowingOptional<StellaFunctionType> parseFuncDecl(ru.itmo.stella.lang.Absyn.DeclFun p) {
+		protected StellaOptional<StellaFunctionType> parseFuncDecl(ru.itmo.stella.lang.Absyn.DeclFun p) {
 			Map<String, StellaType> funArgs = new LinkedHashMap<>();
 			
 			try {
@@ -157,25 +157,25 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 				
 				StellaType retType = p.returntype_.accept(typeVisitor, context).get();
 				
-				return ThrowingOptional.of(new StellaFunctionType(funArgs, retType));
+				return StellaOptional.of(new StellaFunctionType(funArgs, retType));
 			} catch (StellaException e) {
-				return ThrowingOptional.of(StellaFunctionType.class, e);
+				return StellaOptional.of(StellaFunctionType.class, e);
 			}
 		}
 	}
 	
 	public static class StellaTypeVisitor implements 
-		Type.Visitor<ThrowingOptional<StellaType>, ExpressionContext>,
-		ReturnType.Visitor<ThrowingOptional<StellaType>, ExpressionContext>,
-		OptionalTyping.Visitor<ThrowingOptional<StellaType>, ExpressionContext> {
+		Type.Visitor<StellaOptional<StellaType>, ExpressionContext>,
+		ReturnType.Visitor<StellaOptional<StellaType>, ExpressionContext>,
+		OptionalTyping.Visitor<StellaOptional<StellaType>, ExpressionContext> {
 		
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeAuto p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(TypeAuto p, ExpressionContext ctx) {
 			return null;
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeFun p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(TypeFun p, ExpressionContext ctx) {
 			List<StellaType> argsList = new ArrayList<>();
 			
 			try {
@@ -184,51 +184,51 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 				
 				StellaType retType = p.type_.accept(this, ctx).get();
 				
-				return ThrowingOptional.of(new StellaFunctionType(argsList, retType));
+				return StellaOptional.of(new StellaFunctionType(argsList, retType));
 			} catch (StellaException e) {
-				return ThrowingOptional.of(StellaFunctionType.class, e);
+				return StellaOptional.of(StellaFunctionType.class, e);
 			}
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeForAll p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(TypeForAll p, ExpressionContext ctx) {
 			return null;
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeRec p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(TypeRec p, ExpressionContext ctx) {
 			return null;
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeSum p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(TypeSum p, ExpressionContext ctx) {
 			try {
 				StellaType left = p.type_1.accept(this, ctx).get();
 				StellaType right = p.type_2.accept(this, ctx).get();
 				
-				return ThrowingOptional.of(new StellaSumType(left, right));
+				return StellaOptional.of(new StellaSumType(left, right));
 			} catch (StellaException e) {
-				return ThrowingOptional.of(StellaSumType.class, e);
+				return StellaOptional.of(StellaSumType.class, e);
 			}
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeTuple p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(TypeTuple p, ExpressionContext ctx) {
 			List<StellaType> tupleComponentsTypes = new ArrayList<>(); 
 			
 			for (Type type: p.listtype_) {
 				try {
 					tupleComponentsTypes.add(type.accept(this, ctx).get());
 				} catch (StellaException e) {
-					return ThrowingOptional.of(StellaTupleType.class, e);
+					return StellaOptional.of(StellaTupleType.class, e);
 				}
 			}
 			
-			return ThrowingOptional.of(new StellaTupleType(tupleComponentsTypes));
+			return StellaOptional.of(new StellaTupleType(tupleComponentsTypes));
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeRecord p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(TypeRecord p, ExpressionContext ctx) {
 			Map<String, StellaType> recordFieldsTypes = new LinkedHashMap<>(p.listrecordfieldtype_.size());
 			List<Map.Entry<String, StellaType>> fieldsTypesList = new ArrayList<>(p.listrecordfieldtype_.size());
 			
@@ -247,12 +247,12 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 					recordFieldsTypes.put(fieldName, fieldType);
 					fieldsTypesList.add(Map.entry(fieldName, fieldType));
 				} catch (StellaException ex) {
-					return ThrowingOptional.of(StellaRecordType.class, ex);
+					return StellaOptional.of(StellaRecordType.class, ex);
 				}
 			}
 			
 			if (duplicateRecordFields.isEmpty())
-				return ThrowingOptional.of(new StellaRecordType(recordFieldsTypes));
+				return StellaOptional.of(new StellaRecordType(recordFieldsTypes));
 			else {
 				String recordStr = String.format(
 						"{ %s }",
@@ -262,12 +262,12 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 							)
 					);
 				
-				return ThrowingOptional.of(StellaRecordType.class, new StellaDuplicateRecordTypeFieldsException(duplicateRecordFields, recordStr));
+				return StellaOptional.of(StellaRecordType.class, new StellaDuplicateRecordTypeFieldsException(duplicateRecordFields, recordStr));
 			}
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeVariant p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(TypeVariant p, ExpressionContext ctx) {
 			Map<String, StellaType> variantFieldsTypes = new LinkedHashMap<>();
 			List<Map.Entry<String, StellaType>> fieldsTypesList = new ArrayList<>(p.listvariantfieldtype_.size());
 			
@@ -287,11 +287,11 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 					fieldsTypesList.add(Map.entry(fieldName, fieldType));
 				}
 			} catch (StellaException e) {
-				return ThrowingOptional.of(StellaVariantType.class, e);
+				return StellaOptional.of(StellaVariantType.class, e);
 			}
 			
 			if (duplicateRecordFields.isEmpty())
-				return ThrowingOptional.of(new StellaVariantType(variantFieldsTypes));
+				return StellaOptional.of(new StellaVariantType(variantFieldsTypes));
 			else {
 				String variantStr = String.format(
 						"<| %s |>",
@@ -301,74 +301,74 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 							)
 					);
 				
-				return ThrowingOptional.of(StellaVariantType.class, new StellaDuplicateVariantTypeFieldsException(duplicateRecordFields, variantStr));
+				return StellaOptional.of(StellaVariantType.class, new StellaDuplicateVariantTypeFieldsException(duplicateRecordFields, variantStr));
 			}
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeList p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(TypeList p, ExpressionContext ctx) {
 			try {
 				StellaType elemType = p.type_.accept(this, ctx).get();
 				
-				return ThrowingOptional.of(new StellaListType(elemType));
+				return StellaOptional.of(new StellaListType(elemType));
 			} catch (StellaException e) {
-				return ThrowingOptional.of(StellaListType.class, e);
+				return StellaOptional.of(StellaListType.class, e);
 			}
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeBool p, ExpressionContext ctx) {
-			return ThrowingOptional.of(StellaType.Primitives.BOOL);
+		public StellaOptional<StellaType> visit(TypeBool p, ExpressionContext ctx) {
+			return StellaOptional.of(StellaType.Primitives.BOOL);
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeNat p, ExpressionContext ctx) {
-			return ThrowingOptional.of(StellaType.Primitives.NAT);
+		public StellaOptional<StellaType> visit(TypeNat p, ExpressionContext ctx) {
+			return StellaOptional.of(StellaType.Primitives.NAT);
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeUnit p, ExpressionContext ctx) {
-			return ThrowingOptional.of(StellaType.Primitives.UNIT);
+		public StellaOptional<StellaType> visit(TypeUnit p, ExpressionContext ctx) {
+			return StellaOptional.of(StellaType.Primitives.UNIT);
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeTop p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(TypeTop p, ExpressionContext ctx) {
 			return null;
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeBottom p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(TypeBottom p, ExpressionContext ctx) {
 			return null;
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeRef p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(TypeRef p, ExpressionContext ctx) {
 			return null;
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(TypeVar p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(TypeVar p, ExpressionContext ctx) {
 			return null;
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(NoReturnType p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(NoReturnType p, ExpressionContext ctx) {
 //			return ThrowingOptional.of(StellaType.Primitives.UNIT);
 			return null;
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(SomeReturnType p, ExpressionContext ctx) {			
+		public StellaOptional<StellaType> visit(SomeReturnType p, ExpressionContext ctx) {			
 			return p.type_.accept(this, ctx);
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(NoTyping p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(NoTyping p, ExpressionContext ctx) {
 			return null;
 		}
 
 		@Override
-		public ThrowingOptional<StellaType> visit(SomeTyping p, ExpressionContext ctx) {
+		public StellaOptional<StellaType> visit(SomeTyping p, ExpressionContext ctx) {
 			return p.type_.accept(this, ctx);
 		}
 	}
