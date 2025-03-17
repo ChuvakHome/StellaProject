@@ -76,6 +76,8 @@ import ru.itmo.stella.typechecker.expr.UnitConstExpr;
 import ru.itmo.stella.typechecker.expr.VarExpr;
 import ru.itmo.stella.typechecker.expr.VariantExpr;
 import ru.itmo.stella.typechecker.expr.pattern.PatternExpr;
+import ru.itmo.stella.typechecker.expr.pattern.visitor.StellaCorePatternExprVisitor;
+import ru.itmo.stella.typechecker.expr.pattern.visitor.StellaPatternExprVisitor;
 import ru.itmo.stella.typechecker.type.StellaType;
 
 public class StellaCoreExprVisitor extends StellaBaseExprVisitor {

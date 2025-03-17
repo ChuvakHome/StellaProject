@@ -1,9 +1,10 @@
-package ru.itmo.stella.typechecker.expr.visitor;
+package ru.itmo.stella.typechecker.expr.pattern.visitor;
 
 import ru.itmo.stella.lang.Absyn.PatternFalse;
 import ru.itmo.stella.lang.Absyn.PatternInl;
 import ru.itmo.stella.lang.Absyn.PatternInr;
 import ru.itmo.stella.lang.Absyn.PatternInt;
+import ru.itmo.stella.lang.Absyn.PatternSucc;
 import ru.itmo.stella.lang.Absyn.PatternTrue;
 import ru.itmo.stella.lang.Absyn.PatternUnit;
 import ru.itmo.stella.lang.Absyn.PatternVar;
@@ -16,6 +17,7 @@ import ru.itmo.stella.typechecker.expr.pattern.PatternExpr;
 import ru.itmo.stella.typechecker.expr.pattern.PatternInlExpr;
 import ru.itmo.stella.typechecker.expr.pattern.PatternInrExpr;
 import ru.itmo.stella.typechecker.expr.pattern.PatternIntExpr;
+import ru.itmo.stella.typechecker.expr.pattern.PatternSuccExpr;
 import ru.itmo.stella.typechecker.expr.pattern.PatternUnitExpr;
 import ru.itmo.stella.typechecker.expr.pattern.PatternVarExpr;
 import ru.itmo.stella.typechecker.expr.pattern.PatternVariantExpr;
@@ -70,5 +72,12 @@ public class StellaCorePatternExprVisitor extends StellaBasePatternExprVisitor {
 		PatternExpr labelPattern = ((SomePatternData) p.patterndata_).pattern_.accept(this, arg);
 		
 		return new PatternVariantExpr(label, labelPattern);
+	}
+	
+	@Override
+	public PatternExpr visit(PatternSucc p, TypecheckContext arg) {
+		PatternExpr argExpr = p.pattern_.accept(this, arg);
+		
+		return new PatternSuccExpr(argExpr);
 	}
 }

@@ -1,7 +1,5 @@
 package ru.itmo.stella.typechecker.expr.pattern;
 
-import java.util.Map;
-
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.pattern.StellaUnexpectedPatternForTypeException;
 import ru.itmo.stella.typechecker.expr.ExpressionContext;

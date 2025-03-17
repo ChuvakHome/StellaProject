@@ -11,9 +11,10 @@ public abstract class PatternExpr {
 	public static enum Tag {
 		UNIT,
 		BOOL,
+		
 		INT,
-		TRUE,
-		FALSE,
+		SUCC,
+		
 		VAR,
 		INL,
 		INR,

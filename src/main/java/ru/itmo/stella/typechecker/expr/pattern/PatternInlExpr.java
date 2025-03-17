@@ -15,7 +15,7 @@ public class PatternInlExpr extends PatternExpr {
 		this.inlExpr = inlExpr;
 	}
 	
-	public PatternExpr getInlExpression() {
+	public PatternExpr getInlPattern() {
 		return inlExpr;
 	}
 

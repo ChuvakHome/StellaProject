@@ -1,4 +1,4 @@
-package ru.itmo.stella.typechecker.expr.visitor;
+package ru.itmo.stella.typechecker.expr.pattern.visitor;
 
 import ru.itmo.stella.lang.Absyn.PatternAsc;
 import ru.itmo.stella.lang.Absyn.PatternCastAs;
