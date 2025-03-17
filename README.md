@@ -63,4 +63,4 @@ This repository contains the code of typechecker for simple functional programmi
 
 ## Build
 To build the project run `mvn package` or `mvn install`. Runnable java program `typechecker-jar-with-dependencies.jar` will be in `target` directory. 
-If you want to start it, run `java -jar target/typechecker-jar-with-dependencies.jar`.
+If you want to start it, run `java -jar target/typechecker-jar-with-dependencies.jar`. Make sure that you run the typechecker with Java 17+.
