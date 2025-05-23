@@ -19,7 +19,7 @@ public class StellaTypecheckerMain {
 				String.join("\n", 
 					errorsList
 						.stream()
-//						.limit(1)
+						.limit(1)
 						.map(ex -> String.format("%s\n%s\n", ex.getErrorCode(), ex.getRecordMessage()))
 						.toList()
 				)
