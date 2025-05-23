@@ -26,4 +26,27 @@ public class StellaMissingRecordFieldsException extends StellaException {
 			recordExpr
 		);
 	}
+	
+	public StellaMissingRecordFieldsException(
+			List<String> missingFields, 
+			StellaRecordType recordType,
+			StellaRecordType actualRecordType,
+			StellaExpression recordExpr) 
+	{
+		super(
+			StellaTypeErrorCode.ERROR_MISSING_RECORD_FIELDS,
+			"missing fields\\S"
+			+ "%s\\s"
+			+ "for an expected record of type\\S"
+			+ "%s\\s"
+			+ "in the actual type\\S"
+			+ "%s\\s"
+			+ "when typechecking the expression\\S"
+			+ "%s",
+			String.join(", ", missingFields),
+			recordType,
+			actualRecordType,
+			recordExpr
+		);
+	}
 }

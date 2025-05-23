@@ -1,7 +1,6 @@
 package ru.itmo.stella.typechecker.expr;
 
 import ru.itmo.stella.typechecker.exception.StellaException;
-import ru.itmo.stella.typechecker.exception.StellaUnexpectedTypeForExpressionException;
 import ru.itmo.stella.typechecker.type.StellaType;
 
 public class TypeAscExpr extends StellaExpression {
@@ -14,9 +13,10 @@ public class TypeAscExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
-		if (!expected.equals(type))
-			throw new StellaUnexpectedTypeForExpressionException(subexpr, expected, type);
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+		subexpr.checkType(context, type);
+		
+		checkTypeMatching(context, expected, type);
 	}
 
 	@Override

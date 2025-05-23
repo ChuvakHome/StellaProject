@@ -9,15 +9,9 @@ public class StellaUnexpectedPatternForTypeException extends StellaException {
 	private PatternExpr expression;
 	private StellaType expected;
 	
-	public StellaUnexpectedPatternForTypeException(String message, PatternExpr expression, StellaType expected) {
-		super(StellaTypeErrorCode.ERROR_UNEXPECTED_PATTERN_FOR_TYPE, message);
-		
-		this.expression = expression;
-		this.expected = expected;
-	}
-	
 	public StellaUnexpectedPatternForTypeException(PatternExpr expression, StellaType expected) {
-		this(
+		super(
+				StellaTypeErrorCode.ERROR_UNEXPECTED_PATTERN_FOR_TYPE,
 			String.format(
 				"unexpected pattern\\S"
 				+ "%s\\s"
@@ -25,6 +19,23 @@ public class StellaUnexpectedPatternForTypeException extends StellaException {
 				+ "%s",
 				expression,
 				expected
+			),
+			expression, expected
+		);
+	}
+	
+	public StellaUnexpectedPatternForTypeException(StellaType expected, PatternExpr expression, StellaType actual) {
+		super(
+				StellaTypeErrorCode.ERROR_UNEXPECTED_PATTERN_FOR_TYPE,
+			String.format(
+				"expected a pattern for %s\\s"
+				+ "but got\\S"
+				+ "%s\\s"
+				+ "with actual type\\S"
+				+ "%s",
+				expected,
+				expression,
+				actual
 			),
 			expression, expected
 		);

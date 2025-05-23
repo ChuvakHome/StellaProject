@@ -13,12 +13,15 @@ import ru.itmo.stella.lang.Absyn.AParamDecl;
 import ru.itmo.stella.lang.Absyn.APatternBinding;
 import ru.itmo.stella.lang.Absyn.Abstraction;
 import ru.itmo.stella.lang.Absyn.Application;
+import ru.itmo.stella.lang.Absyn.Assign;
 import ru.itmo.stella.lang.Absyn.Binding;
 import ru.itmo.stella.lang.Absyn.ConsList;
 import ru.itmo.stella.lang.Absyn.ConstFalse;
 import ru.itmo.stella.lang.Absyn.ConstInt;
+import ru.itmo.stella.lang.Absyn.ConstMemory;
 import ru.itmo.stella.lang.Absyn.ConstTrue;
 import ru.itmo.stella.lang.Absyn.ConstUnit;
+import ru.itmo.stella.lang.Absyn.Deref;
 import ru.itmo.stella.lang.Absyn.DotRecord;
 import ru.itmo.stella.lang.Absyn.DotTuple;
 import ru.itmo.stella.lang.Absyn.Expr;
@@ -30,17 +33,26 @@ import ru.itmo.stella.lang.Absyn.Inr;
 import ru.itmo.stella.lang.Absyn.IsEmpty;
 import ru.itmo.stella.lang.Absyn.IsZero;
 import ru.itmo.stella.lang.Absyn.Let;
+import ru.itmo.stella.lang.Absyn.LetRec;
 import ru.itmo.stella.lang.Absyn.Match;
 import ru.itmo.stella.lang.Absyn.MatchCase;
 import ru.itmo.stella.lang.Absyn.NatRec;
+import ru.itmo.stella.lang.Absyn.Panic;
 import ru.itmo.stella.lang.Absyn.ParamDecl;
-import ru.itmo.stella.lang.Absyn.PatternVar;
+import ru.itmo.stella.lang.Absyn.PatternBinding;
 import ru.itmo.stella.lang.Absyn.Pred;
+import ru.itmo.stella.lang.Absyn.Ref;
+import ru.itmo.stella.lang.Absyn.Sequence;
 import ru.itmo.stella.lang.Absyn.SomeExprData;
 import ru.itmo.stella.lang.Absyn.Succ;
 import ru.itmo.stella.lang.Absyn.Tail;
+import ru.itmo.stella.lang.Absyn.Throw;
+import ru.itmo.stella.lang.Absyn.TryCastAs;
+import ru.itmo.stella.lang.Absyn.TryCatch;
+import ru.itmo.stella.lang.Absyn.TryWith;
 import ru.itmo.stella.lang.Absyn.Tuple;
 import ru.itmo.stella.lang.Absyn.TypeAsc;
+import ru.itmo.stella.lang.Absyn.TypeCast;
 import ru.itmo.stella.lang.Absyn.Var;
 import ru.itmo.stella.lang.Absyn.Variant;
 import ru.itmo.stella.typechecker.BaseStellaTypechecker.StellaTypeVisitor;
@@ -49,8 +61,12 @@ import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.record.StellaDuplicateRecordFieldsException;
 import ru.itmo.stella.typechecker.expr.AbstractionExpr;
 import ru.itmo.stella.typechecker.expr.ApplicationExpr;
+import ru.itmo.stella.typechecker.expr.AssignExpr;
 import ru.itmo.stella.typechecker.expr.BoolConstExpr;
+import ru.itmo.stella.typechecker.expr.CastAsExpr;
 import ru.itmo.stella.typechecker.expr.ConsListExpr;
+import ru.itmo.stella.typechecker.expr.ConstMemoryExpr;
+import ru.itmo.stella.typechecker.expr.DerefExpr;
 import ru.itmo.stella.typechecker.expr.DotRecordExpr;
 import ru.itmo.stella.typechecker.expr.DotTupleExpr;
 import ru.itmo.stella.typechecker.expr.FixExpr;
@@ -61,21 +77,30 @@ import ru.itmo.stella.typechecker.expr.InrExpr;
 import ru.itmo.stella.typechecker.expr.IsEmptyExpr;
 import ru.itmo.stella.typechecker.expr.IsZeroExpr;
 import ru.itmo.stella.typechecker.expr.LetExpr;
+import ru.itmo.stella.typechecker.expr.LetRecExpr;
 import ru.itmo.stella.typechecker.expr.ListExpr;
 import ru.itmo.stella.typechecker.expr.MatchExpr;
 import ru.itmo.stella.typechecker.expr.NatConstExpr;
 import ru.itmo.stella.typechecker.expr.NatRecExpr;
+import ru.itmo.stella.typechecker.expr.PanicExpr;
 import ru.itmo.stella.typechecker.expr.PredExpr;
 import ru.itmo.stella.typechecker.expr.RecordExpr;
+import ru.itmo.stella.typechecker.expr.RefExpr;
+import ru.itmo.stella.typechecker.expr.SequenceExpr;
 import ru.itmo.stella.typechecker.expr.StellaExpression;
 import ru.itmo.stella.typechecker.expr.SuccExpr;
 import ru.itmo.stella.typechecker.expr.TailExpr;
+import ru.itmo.stella.typechecker.expr.ThrowExpr;
+import ru.itmo.stella.typechecker.expr.TryCastAsExpr;
+import ru.itmo.stella.typechecker.expr.TryCatchExpr;
+import ru.itmo.stella.typechecker.expr.TryWithExpr;
 import ru.itmo.stella.typechecker.expr.TupleExpr;
 import ru.itmo.stella.typechecker.expr.TypeAscExpr;
 import ru.itmo.stella.typechecker.expr.UnitConstExpr;
 import ru.itmo.stella.typechecker.expr.VarExpr;
 import ru.itmo.stella.typechecker.expr.VariantExpr;
 import ru.itmo.stella.typechecker.expr.pattern.PatternExpr;
+import ru.itmo.stella.typechecker.expr.pattern.PatternMatchCase;
 import ru.itmo.stella.typechecker.expr.pattern.visitor.StellaCorePatternExprVisitor;
 import ru.itmo.stella.typechecker.expr.pattern.visitor.StellaPatternExprVisitor;
 import ru.itmo.stella.typechecker.type.StellaType;
@@ -190,6 +215,14 @@ public class StellaCoreExprVisitor extends StellaBaseExprVisitor {
 		StellaType type = p.type_.accept(typeVisitor, ctx.getExpressionContext()).get();
 		
 		return new TypeAscExpr(expr, type);
+	}
+	
+	@Override
+	public StellaExpression doVisit(TypeCast p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression castExpr = p.expr_.accept(this, ctx).get();
+		StellaType castType = p.type_.accept(typeVisitor, ctx.getExpressionContext()).get();
+		
+		return new CastAsExpr(castExpr, castType);
 	}
 	
 	@Override
@@ -315,33 +348,59 @@ public class StellaCoreExprVisitor extends StellaBaseExprVisitor {
 	
 	@Override
 	public StellaExpression doVisit(Let p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
-		APatternBinding pb = (APatternBinding) p.listpatternbinding_.getFirst();
+		StellaCorePatternExprVisitor patternVisitor = new StellaCorePatternExprVisitor(typeVisitor);
 		
-		PatternVar patternVar = (PatternVar) pb.pattern_;
+		List<PatternMatchCase> cases = new ArrayList<>();
 		
-		String replaceName = patternVar.stellaident_;
-		StellaExpression subexpr = pb.expr_.accept(this, ctx).get();
+		for (PatternBinding patternBinding: p.listpatternbinding_) {
+			APatternBinding pb = (APatternBinding) patternBinding;
+			
+			PatternExpr pattern = pb.pattern_.accept(patternVisitor, ctx).get();
+			StellaExpression expr = pb.expr_.accept(this, ctx).get();
+			
+			cases.add(new PatternMatchCase(pattern, expr));
+		}
 		
 		StellaExpression expr = p.expr_.accept(this, ctx).get();
 		
-		return new LetExpr(replaceName, subexpr, expr);
+		return new LetExpr(cases, expr);
+	}
+	
+	@Override
+	public StellaExpression doVisit(LetRec p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaCorePatternExprVisitor patternVisitor = new StellaCorePatternExprVisitor(typeVisitor);
+		
+		List<PatternMatchCase> cases = new ArrayList<>();
+		
+		for (PatternBinding patternBinding: p.listpatternbinding_) {
+			APatternBinding pb = (APatternBinding) patternBinding;
+			
+			PatternExpr pattern = pb.pattern_.accept(patternVisitor, ctx).get();
+			StellaExpression expr = pb.expr_.accept(this, ctx).get();
+			
+			cases.add(new PatternMatchCase(pattern, expr));
+		}
+		
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
+		
+		return new LetRecExpr(cases, expr);
 	}
 	
 	@Override
 	public StellaExpression doVisit(Match p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		StellaExpression matchExpr = p.expr_.accept(this, ctx).get();
 		
-		List<MatchExpr.MatchCase> matchExprCases = new ArrayList<>();
+		List<PatternMatchCase> matchExprCases = new ArrayList<>();
 		
 		StellaPatternExprVisitor patternVisitor = new StellaCorePatternExprVisitor(typeVisitor); 
 		
 		for (MatchCase matchCase: p.listmatchcase_) {
 			AMatchCase acase = (AMatchCase) matchCase;
 			
-			PatternExpr patternExpr = acase.pattern_.accept(patternVisitor, ctx);
+			PatternExpr patternExpr = acase.pattern_.accept(patternVisitor, ctx).get();
 			StellaExpression matchCaseExpr = acase.expr_.accept(this, ctx).get();
 			
-			matchExprCases.add(new MatchExpr.MatchCase(patternExpr, matchCaseExpr));
+			matchExprCases.add(new PatternMatchCase(patternExpr, matchCaseExpr));
 		}
 		
 		return new MatchExpr(matchExpr, matchExprCases);
@@ -350,8 +409,93 @@ public class StellaCoreExprVisitor extends StellaBaseExprVisitor {
 	@Override
 	public StellaExpression doVisit(Variant p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		String label = p.stellaident_;
-		StellaExpression expr = ((SomeExprData) p.exprdata_).expr_.accept(this, ctx).get();
+				
+		StellaExpression expr = null;
 		
+		if (p.exprdata_ instanceof SomeExprData someExpr)
+			expr = someExpr.expr_.accept(this, ctx).get();
+			
 		return new VariantExpr(label, expr);
+	}
+	
+	@Override
+	public StellaExpression doVisit(ConstMemory p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		return new ConstMemoryExpr(p.memoryaddress_);
+	}
+	
+	@Override
+	public StellaExpression doVisit(Ref p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
+		
+		return new RefExpr(expr);
+	}
+	
+	@Override
+	public StellaExpression doVisit(Deref p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
+		
+		return new DerefExpr(expr);
+	}
+	
+	@Override
+	public StellaExpression doVisit(Assign p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression lhs = p.expr_1.accept(this, ctx).get();
+		StellaExpression rhs = p.expr_2.accept(this, ctx).get();
+		
+		return new AssignExpr(lhs, rhs);
+	}
+	
+	@Override
+	public StellaExpression doVisit(Sequence p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression expr1 = p.expr_1.accept(this, ctx).get();
+		StellaExpression expr2 = p.expr_2.accept(this, ctx).get();
+		
+		return new SequenceExpr(expr1, expr2);
+	}
+	
+	@Override
+	public StellaExpression doVisit(Panic p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		return new PanicExpr();
+	}
+	
+	@Override
+	public StellaExpression doVisit(Throw p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression expr = p.expr_.accept(this, ctx).get();
+		
+		return new ThrowExpr(expr);
+	}
+	
+	@Override
+	public StellaExpression doVisit(TryWith p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression tryExpr = p.expr_1.accept(this, ctx).get();
+		StellaExpression withExpr = p.expr_2.accept(this, ctx).get();
+		
+		return new TryWithExpr(tryExpr, withExpr);
+	}
+	
+	@Override
+	public StellaExpression doVisit(TryCatch p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression tryExpr = p.expr_1.accept(this, ctx).get();
+		
+		StellaPatternExprVisitor patternVisitor = new StellaCorePatternExprVisitor(typeVisitor);
+		
+		PatternExpr patternExpr = p.pattern_.accept(patternVisitor, ctx).get();
+		StellaExpression withExpr = p.expr_2.accept(this, ctx).get();
+		
+		return new TryCatchExpr(tryExpr, new PatternMatchCase(patternExpr, withExpr));
+	}
+	
+	@Override
+	public StellaExpression doVisit(TryCastAs p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+		StellaExpression castExpr = p.expr_1.accept(this, ctx).get();
+		StellaType castType = p.type_.accept(typeVisitor, ctx.getExpressionContext()).get();
+		
+		StellaCorePatternExprVisitor patternVisitor = new StellaCorePatternExprVisitor(typeVisitor);
+		PatternExpr tryPattern = p.pattern_.accept(patternVisitor, ctx).get();
+		StellaExpression patternExpr = p.expr_2.accept(this, ctx).get();
+		
+		StellaExpression withExpr = p.expr_3.accept(this, ctx).get();
+		
+		return new TryCastAsExpr(castExpr, castType, tryPattern, patternExpr, withExpr);
 	}
 }

@@ -2,6 +2,7 @@ package ru.itmo.stella.typechecker.expr;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import ru.itmo.stella.typechecker.exception.StellaException;
@@ -27,19 +28,30 @@ public class TupleExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
-		StellaTupleType actualTupleType = inferType(context);
-		
-		if (expected.getTypeTag() != Tag.TUPLE)
-			throw new StellaUnexpectedTupleException(expected, this);
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+		if (expected == StellaType.TOP)
+			checkTypeMatching(context, expected, inferType(context));
 		else {
+			if (expected.getTypeTag() != Tag.TUPLE)
+				throw new StellaUnexpectedTupleException(expected, this);
+			
 			StellaTupleType expectedTupleType = (StellaTupleType) expected;
 			
-			if (expectedTupleType.getFieldsCount() != actualTupleType.getFieldsCount())
-				throw new StellaUnexpectedTupleLengthException(expectedTupleType, actualTupleType.getFieldsCount(), this);
+			final int componentsCount = tupleComponents.size();
+			
+			if (componentsCount != expectedTupleType.getFieldsCount())
+				throw new StellaUnexpectedTupleLengthException(expectedTupleType, componentsCount, this);
+			
+			Iterator<StellaExpression> actualValues = tupleComponents.iterator();
+			Iterator<StellaType> expectedTypesIter = expectedTupleType.getFieldTypes().iterator();
+			
+			while (expectedTypesIter.hasNext()) {
+				StellaExpression actualComponentValue = actualValues.next();
+				StellaType expectedComponentType = expectedTypesIter.next();
+				
+				actualComponentValue.checkType(context, expectedComponentType);
+			}
 		}
-		
-		checkTypesEquality(expected, actualTupleType);
 	}
 
 	@Override

@@ -31,7 +31,7 @@ public class ApplicationExpr extends StellaExpression {
 	}
 
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaType fnRawType = fnExpr.inferType(context);
 		
 		if (fnRawType.getTypeTag() != StellaType.Tag.FUNCTION)
@@ -41,8 +41,8 @@ public class ApplicationExpr extends StellaExpression {
 		
 		if (fnType.getArity() != arguments.size())
 			throw new StellaIncorrectNumberOfArgumentsException(
-						fnExpr,
 						fnType,
+						fnExpr,
 						arguments.size(),
 						this
 					);
@@ -55,8 +55,7 @@ public class ApplicationExpr extends StellaExpression {
 			arg.checkType(context, argsTypes.get(i));
 		}
 		
-//		checkType(context, fnType.getReturnType());
-		checkTypesEquality(expected, fnType.getReturnType());
+		checkTypeMatching(context, expected, fnType.getReturnType());
 	}
 
 	@Override
@@ -70,8 +69,8 @@ public class ApplicationExpr extends StellaExpression {
 		
 		if (fnType.getArity() != arguments.size())
 			throw new StellaIncorrectNumberOfArgumentsException(
-						fnExpr,
 						fnType,
+						fnExpr,
 						arguments.size(),
 						this
 					);
@@ -84,12 +83,15 @@ public class ApplicationExpr extends StellaExpression {
 			arg.checkType(context, argsTypes.get(i));
 		}
 		
-		checkType(context, fnType.getReturnType());
+		doTypeCheck(context, fnType.getReturnType());
 		
 		return fnType.getReturnType();
 	}
 
 	public String toString() {
-		return String.format("%s(%s)", fnExpr, String.join(", ", arguments.stream().map(StellaExpression::toString).toList()));
+		if (fnExpr instanceof VarExpr fnVar)
+			return String.format("%s(%s)", fnVar, String.join(", ", arguments.stream().map(StellaExpression::toString).toList()));
+		
+		return String.format("(%s)(%s)", fnExpr, String.join(", ", arguments.stream().map(StellaExpression::toString).toList()));
 	}
 }

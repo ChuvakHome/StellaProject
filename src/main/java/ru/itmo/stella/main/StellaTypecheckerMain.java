@@ -12,15 +12,19 @@ public class StellaTypecheckerMain {
 		StellaTypechecker stellaTypechecker = new BaseStellaTypechecker();
 		List<StellaException> errorsList = stellaTypechecker.typecheckProgram(System.in);
 		
-		System.err.println(
-			String.join("\n", 
-				errorsList
-					.stream()
-					.limit(1)
-					.map(ex -> String.format("%s\n%s\n", ex.getErrorCode(), ex.getRecordMessage()))
-					.toList()
-			)
-		);
+		if (errorsList.isEmpty())
+			System.out.println("Input program is well-typed!");
+		else {
+			System.err.println(
+				String.join("\n", 
+					errorsList
+						.stream()
+//						.limit(1)
+						.map(ex -> String.format("%s\n%s\n", ex.getErrorCode(), ex.getRecordMessage()))
+						.toList()
+				)
+			);
+		}
 		
 		System.exit(errorsList.size());
 	}

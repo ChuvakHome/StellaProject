@@ -16,8 +16,8 @@ public class DotTupleExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
-		checkTypesEquality(expected, inferType(context));
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+		checkTypeMatching(context, expected, inferType(context));
 	}
 
 	@Override
@@ -29,7 +29,9 @@ public class DotTupleExpr extends StellaExpression {
 		
 		StellaTupleType tupleType = (StellaTupleType) exprType;
 		
-		if (tupleType.getFieldsCount() < number)
+		if (number <= 0)
+			throw new StellaTupleIndexOutOfBoundsException(number, this);
+		else if (tupleType.getFieldsCount() < number)
 			throw new StellaTupleIndexOutOfBoundsException(number, tupleExpr, tupleType);
 		
 		return tupleType.getFieldType(number - 1);

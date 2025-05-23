@@ -3,6 +3,7 @@ package ru.itmo.stella.typechecker.expr;
 import java.util.Collections;
 import java.util.List;
 
+import ru.itmo.stella.typechecker.StellaLanguageExtension;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.list.StellaAmbiguousListException;
 import ru.itmo.stella.typechecker.exception.list.StellaUnexpectedListException;
@@ -25,7 +26,7 @@ public class ListExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.LIST)
 			throw new StellaUnexpectedListException(expected, this);
 		
@@ -41,8 +42,12 @@ public class ListExpr extends StellaExpression {
 
 	@Override
 	public StellaType inferType(ExpressionContext context) throws StellaException {
-		if (elements.isEmpty())
+		if (elements.isEmpty()) {
+			if (context.isExtensionUsed(StellaLanguageExtension.AMBIGUOUS_TYPE_AS_BOTTOM))
+				return new StellaListType(StellaType.BOTTOM);
+			
 			throw new StellaAmbiguousListException.StellaEmptyListIsAmbiguousException();
+		}
 		
 		StellaExpression head = elements.get(0);
 		StellaType headType = head.inferType(context);

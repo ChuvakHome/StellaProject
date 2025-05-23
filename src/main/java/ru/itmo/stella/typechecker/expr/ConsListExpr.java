@@ -23,14 +23,18 @@ public class ConsListExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
-		if (expected.getTypeTag() != StellaType.Tag.LIST)
-			throw new StellaUnexpectedListException(expected, this);
-		
-		StellaListType expectedListType = (StellaListType) expected;
-		
-		head.checkType(context, expectedListType.getElementType());
-		tail.checkType(context, expectedListType);
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+		if (expected == StellaType.TOP)
+			inferType(context);
+		else {
+			if (expected.getTypeTag() != StellaType.Tag.LIST)
+				throw new StellaUnexpectedListException(expected, this);
+			
+			StellaListType expectedListType = (StellaListType) expected;
+			
+			head.checkType(context, expectedListType.getElementType());
+			tail.checkType(context, expectedListType);
+		}
 	}
 
 	@Override

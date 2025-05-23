@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.StellaUndefinedVariableException;
-import ru.itmo.stella.typechecker.exception.StellaUnexpectedTypeForExpressionException;
 import ru.itmo.stella.typechecker.type.StellaType;
 
 public class VarExpr extends StellaExpression {
@@ -19,11 +18,10 @@ public class VarExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaType type = inferType(context);
 		
-		if (!expected.equals(type))
-			throw new StellaUnexpectedTypeForExpressionException(this, expected, type);
+		checkTypeMatching(context, expected, type);
 	}
 
 	@Override

@@ -24,4 +24,24 @@ public class StellaUnexpectedTupleLengthException extends StellaException {
 					actualTupleExpr
 				);
 	}
+	
+	public StellaUnexpectedTupleLengthException(
+			StellaTupleType expectedTupleType,
+			StellaTupleType actualTupleType,
+			StellaExpression actualTupleExpr
+		) {
+	super(StellaTypeErrorCode.ERROR_UNEXPECTED_TUPLE_LENGTH,
+				"expected %d component(s)\\s"
+				+ "for a tuple of type\\S"
+				+ "%s\\s"
+				+ "but got %d component(s)\\s"
+				+ "in tuple type\\S"
+				+ "%s\\s"
+				+ "when typechecking the expression\\S"
+				+ "%s",
+				expectedTupleType.getFieldsCount(), expectedTupleType,
+				actualTupleType.getFieldsCount(), actualTupleType,
+				actualTupleExpr
+			);
+}
 }

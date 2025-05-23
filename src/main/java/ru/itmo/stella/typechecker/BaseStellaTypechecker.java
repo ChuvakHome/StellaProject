@@ -18,6 +18,8 @@ import ru.itmo.stella.lang.StellaParser;
 import ru.itmo.stella.lang.Absyn.AParamDecl;
 import ru.itmo.stella.lang.Absyn.ARecordFieldType;
 import ru.itmo.stella.lang.Absyn.AVariantFieldType;
+import ru.itmo.stella.lang.Absyn.Decl;
+import ru.itmo.stella.lang.Absyn.DeclFun;
 import ru.itmo.stella.lang.Absyn.NoReturnType;
 import ru.itmo.stella.lang.Absyn.NoTyping;
 import ru.itmo.stella.lang.Absyn.OptionalTyping;
@@ -56,6 +58,7 @@ import ru.itmo.stella.typechecker.expr.visitor.StellaExprVisitor;
 import ru.itmo.stella.typechecker.type.StellaFunctionType;
 import ru.itmo.stella.typechecker.type.StellaListType;
 import ru.itmo.stella.typechecker.type.StellaRecordType;
+import ru.itmo.stella.typechecker.type.StellaRefType;
 import ru.itmo.stella.typechecker.type.StellaSumType;
 import ru.itmo.stella.typechecker.type.StellaTupleType;
 import ru.itmo.stella.typechecker.type.StellaType;
@@ -86,6 +89,7 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 		
 		List<StellaException> errorRecords = new ArrayList<>();
 		Visitor visitor = new Visitor();
+		
 		parser.program().result.accept(visitor, errorRecords);
 		
 		postTypecheck(errorRecords);
@@ -115,6 +119,26 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 		private StellaTypeVisitor typeVisitor = new StellaTypeVisitor();
 		
 		@Override
+		public ru.itmo.stella.lang.Absyn.Extension visit(ru.itmo.stella.lang.Absyn.AnExtension p, List<StellaException> errorsList) {			
+			for (String extensionName: p.listextensionname_)
+				context.addExtension(StellaLanguageExtension.getExtensionByName(extensionName));
+			
+			return super.visit(p, errorsList);
+		}
+		
+		@Override
+		public ru.itmo.stella.lang.Absyn.Decl visit(ru.itmo.stella.lang.Absyn.DeclExceptionType p, List<StellaException> errorsList) {
+			try {
+				StellaType exceptionType = p.type_.accept(typeVisitor, context).get();
+				context.setExceptionType(exceptionType);
+			} catch (StellaException e) {
+				errorsList.add(e);
+			}
+			
+			return super.visit(p, errorsList);
+		}
+		
+		@Override
 		public ru.itmo.stella.lang.Absyn.Decl visit(ru.itmo.stella.lang.Absyn.DeclFun p, List<StellaException> errorsList) {
 			String fnName = p.stellaident_;
 			
@@ -123,7 +147,21 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 				
 				ExpressionContext subctx = new ExpressionContext(context, fnStellaType.getArgumensTypes());
 				
+				ExpressionContext oldContext = context;
+				context = subctx;
+				
 				try {
+					for (Decl decl: p.listdecl_) {
+						if (decl instanceof DeclFun nestedDeclFun) {
+							String nestedFnName = nestedDeclFun.stellaident_;
+							
+							nestedDeclFun.accept(this, errorsList);
+							
+							StellaFunctionType nestedFnStellaType = parseFuncDecl(nestedDeclFun).get();
+							subctx.add(nestedFnName, nestedFnStellaType);
+						}
+					}
+					
 					StellaExpression fnBody = p.expr_.accept(
 								exprVisitor,
 								new TypecheckContext(errorsList, subctx)
@@ -133,13 +171,16 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 				} catch (StellaException e) {
 					errorsList.add(e);
 				}
-					
+				
+				context = oldContext;
 				context.add(fnName, fnStellaType);
 			} catch (StellaException e) {
 				errorsList.add(e);
 			}
 			
-			return super.visit(p, errorsList);
+			return null;
+			
+//			return super.visit(p, errorsList);
 		}
 		
 		protected StellaOptional<StellaFunctionType> parseFuncDecl(ru.itmo.stella.lang.Absyn.DeclFun p) {
@@ -333,17 +374,23 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 
 		@Override
 		public StellaOptional<StellaType> visit(TypeTop p, ExpressionContext ctx) {
-			return null;
+			return StellaOptional.of(StellaType.TOP);
 		}
 
 		@Override
 		public StellaOptional<StellaType> visit(TypeBottom p, ExpressionContext ctx) {
-			return null;
+			return StellaOptional.of(StellaType.BOTTOM);
 		}
 
 		@Override
 		public StellaOptional<StellaType> visit(TypeRef p, ExpressionContext ctx) {
-			return null;
+			try {
+				StellaType referencedType = p.type_.accept(this, ctx).get();
+				
+				return StellaOptional.of(new StellaRefType(referencedType));
+			} catch (StellaException e) {
+				return StellaOptional.of(StellaRefType.class, e);
+			}
 		}
 
 		@Override
@@ -364,7 +411,7 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 
 		@Override
 		public StellaOptional<StellaType> visit(NoTyping p, ExpressionContext ctx) {
-			return null;
+			return StellaOptional.of(StellaType.NO_TYPE);
 		}
 
 		@Override

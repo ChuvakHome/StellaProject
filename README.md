@@ -4,26 +4,38 @@ This repository contains the code of typechecker for simple functional programmi
 - language core
 - extentions:
   * #unit-type
-  * #pairs & #tuples
+  * #pairs, #tuples
   * #records
-  * #let-bindings
+  * #let-bindings, let-bindings, #let-patterns, #letrec-bindings
   * #type-ascriptions
   * #sum-types
   * #lists
   * #variants
   * #fixpoint-combinator
   * #natural-literals
-  * #nullary-functions & #multiparameter-functions
+  * #nested-function-declarations
+  * #nullary-functions, #multiparameter-functions
   * #structural-patterns, not all, availables patterns are:
-    + variables
-    + natural literals
-    + succ
+    + asc
     + booleans
-    + unit
+    + lists
+    + natural literals
+    + records
+    + succ
     + sum-types
+    + tuples
+    + unit
+    + variables
     + variants
+  * #references
+  * #structural-subtyping
+  * #panic
+  * #exceptions
+  * #type-cast
+  * #top-type, #bottom-type
+  * #ambiguous-type-as-bottom
+
 - errors:
-	* ERROR_MISSING_MAIN
 	* ERROR_MISSING_MAIN
 	* ERROR_UNDEFINED_VARIABLE
 	* ERROR_UNEXPECTED_TYPE_FOR_EXPRESSION
@@ -48,14 +60,39 @@ This repository contains the code of typechecker for simple functional programmi
 	* ERROR_AMBIGUOUS_VARIANT_TYPE
 	* ERROR_AMBIGUOUS_LIST
 	* ERROR_ILLEGAL_EMPTY_MATCHING
+	* ERROR_NONEXHAUSTIVE_LET_PATTERNS
+	* ERROR_NONEXHAUSTIVE_LETREC_PATTERNS
 	* ERROR_NONEXHAUSTIVE_MATCH_PATTERNS
 	* ERROR_UNEXPECTED_PATTERN_FOR_TYPE
 	* ERROR_DUPLICATE_RECORD_FIELDS
 	* ERROR_DUPLICATE_RECORD_TYPE_FIELDS
 	* ERROR_DUPLICATE_VARIANT_TYPE_FIELDS
+	
+	* ERROR_UNEXPECTED_DATA_FOR_NULLARY_LABEL
+	* ERROR_MISSING_DATA_FOR_LABEL
+	* ERROR_UNEXPECTED_NON_NULLARY_VARIANT_PATTERN
+	* ERROR_UNEXPECTED_NULLARY_VARIANT_PATTERN
+	
 	* ERROR_INCORRECT_ARITY_OF_MAIN
 	* ERROR_INCORRECT_NUMBER_OF_ARGUMENTS
 	* ERROR_UNEXPECTED_NUMBER_OF_PARAMETERS_IN_LAMBDA
+	
+	* ERROR_DUPLICATE_PATTERN_VARIABLE
+	* ERROR_DUPLICATE_RECORD_PATTERN_FIELDS
+	
+	* ERROR_AMBIGUOUS_PATTERN_TYPE
+	
+	* ERROR_EXCEPTION_TYPE_NOT_DECLARED
+	* ERROR_AMBIGUOUS_THROW_TYPE
+	* ERROR_AMBIGUOUS_REFERENCE_TYPE 
+	* ERROR_AMBIGUOUS_PANIC_TYPE
+	* ERROR_NOT_A_REFERENCE
+	* ERROR_UNEXPECTED_MEMORY_ADDRESS 
+	* ERROR_UNEXPECTED_SUBTYPE
+	
+	* ERROR_UNEXPECTED_REFERENCE
+	
+	* ERROR_NONEXHAUSTIVE_CATCH_PATTERNS
 
 ## Requirements:
 - JDK 17 or later

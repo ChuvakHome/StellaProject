@@ -31,7 +31,7 @@ public class IfThenStellaExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		conditionExpr.checkType(context, StellaType.Primitives.BOOL);
 		
 		try {
@@ -40,15 +40,6 @@ public class IfThenStellaExpr extends StellaExpression {
 		} catch (StellaUnexpectedTypeForExpressionException e) {
 			throw new StellaUnexpectedTypeForExpressionException(this, expected, trueExpr.inferType(context));
 		}
-		
-//		StellaType trueExprType = null;
-//		
-//		try {
-//			trueExprType = trueExpr.inferType(context);
-//			falseExpr.checkType(context, trueExprType);
-//		} catch (StellaUnexpectedTypeForExpressionException e) {
-//			throw new StellaUnexpectedTypeForExpressionException(this, trueExprType, falseExpr.inferType(context));
-//		}
 	}
 
 	@Override

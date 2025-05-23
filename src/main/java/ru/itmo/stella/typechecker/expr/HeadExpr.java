@@ -17,8 +17,7 @@ public class HeadExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
-		checkTypesEquality(expected, inferType(context));
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {arg.checkType(context, new StellaListType(expected));
 	}
 
 	@Override

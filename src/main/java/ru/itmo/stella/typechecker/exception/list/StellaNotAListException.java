@@ -11,16 +11,17 @@ public class StellaNotAListException extends StellaException {
 				StellaExpression expr,
 				StellaExpression listExpr
 			) {
-		super(StellaTypeErrorCode.ERROR_NOT_A_LIST,
-					"expected a list type but got\\S"
-					+ "%s\\s"
-					+ "for the expression\\S"
-					+ "%s\\s"
-					+ "in the expression\\S"
-					+ "%s",
-					actual,
-					expr,
-					listExpr
-				);
+		super(
+			StellaTypeErrorCode.ERROR_NOT_A_LIST,
+				"expected a list type but got\\S"
+				+ "%s\\s"
+				+ "for the expression\\S"
+				+ "%s\\s"
+				+ "in the expression\\S"
+				+ "%s",
+				actual,
+				expr,
+				listExpr
+		);
 	}
 }

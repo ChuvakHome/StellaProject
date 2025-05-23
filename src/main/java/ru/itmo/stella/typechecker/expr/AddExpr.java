@@ -12,7 +12,7 @@ public class AddExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		left.checkType(context, StellaType.Primitives.NAT);
 		right.checkType(context, StellaType.Primitives.NAT);
 	}

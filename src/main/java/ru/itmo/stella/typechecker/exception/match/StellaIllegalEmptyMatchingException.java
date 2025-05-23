@@ -4,8 +4,8 @@ import ru.itmo.stella.typechecker.StellaTypeErrorCode;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.expr.StellaExpression;
 
-public class StellaIllegalEmptryMatchingException extends StellaException {
-	public StellaIllegalEmptryMatchingException(
+public class StellaIllegalEmptyMatchingException extends StellaException {
+	public StellaIllegalEmptyMatchingException(
 				StellaExpression matchExpr
 			) {
 		super(StellaTypeErrorCode.ERROR_ILLEGAL_EMPTY_MATCHING,

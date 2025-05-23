@@ -16,8 +16,8 @@ public class IsEmptyExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
-		checkTypesEquality(expected, inferType(context));
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+		checkTypeMatching(context, expected, inferType(context));
 	}
 
 	@Override

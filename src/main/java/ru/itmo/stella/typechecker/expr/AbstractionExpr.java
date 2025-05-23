@@ -4,7 +4,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
+import ru.itmo.stella.typechecker.StellaLanguageExtension;
 import ru.itmo.stella.typechecker.exception.StellaException;
+import ru.itmo.stella.typechecker.exception.StellaUnexpectedSubtypeException;
 import ru.itmo.stella.typechecker.exception.function.StellaUnexpectedLambdaException;
 import ru.itmo.stella.typechecker.exception.function.StellaUnexpectedNumberOfParametersInLambdaException;
 import ru.itmo.stella.typechecker.exception.function.StellaUnexpectedTypeForParameterException;
@@ -21,7 +23,7 @@ public class AbstractionExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.FUNCTION)
 			throw new StellaUnexpectedLambdaException(expected, this);
 		
@@ -39,10 +41,17 @@ public class AbstractionExpr extends StellaExpression {
 	
 		while (it1.hasNext() && it2.hasNext()) {
 			Map.Entry<String, StellaType> entry = it1.next();
-			StellaType argType = it2.next();
+			String argName = entry.getKey();
+			StellaType actualArgType = entry.getValue();
 			
-			if (!argType.equals(entry.getValue()))
-				throw new StellaUnexpectedTypeForParameterException(this, entry.getKey(), argType, entry.getValue());
+			StellaType expectedArgType = it2.next();
+			
+			if (!expectedArgType.equals(actualArgType)) {
+				if (context.isExtensionUsed(StellaLanguageExtension.STRUCTUAL_SUBTYPING) && !expectedArgType.isSubtype(actualArgType))
+					throw new StellaUnexpectedSubtypeException(this, expectedArgType, actualArgType);
+				else if (!context.isExtensionUsed(StellaLanguageExtension.STRUCTUAL_SUBTYPING))
+					throw new StellaUnexpectedTypeForParameterException(argName, expectedArgType, actualArgType, this);
+			}
 		}
 		
 		

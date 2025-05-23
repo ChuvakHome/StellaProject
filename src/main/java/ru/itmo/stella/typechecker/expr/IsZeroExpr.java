@@ -15,10 +15,10 @@ private StellaExpression argument;
 	}
 
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		argument.checkType(context, StellaType.Primitives.NAT);
 		
-		checkTypesEquality(expected, StellaType.Primitives.BOOL);
+		checkTypeMatching(context, expected, StellaType.Primitives.BOOL);
 	}
 
 	@Override

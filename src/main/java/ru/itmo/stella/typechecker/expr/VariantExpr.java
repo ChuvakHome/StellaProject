@@ -1,7 +1,12 @@
 package ru.itmo.stella.typechecker.expr;
 
+import java.util.Map;
+
+import ru.itmo.stella.typechecker.StellaLanguageExtension;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.variant.StellaAmbiguousVariantTypeException;
+import ru.itmo.stella.typechecker.exception.variant.StellaMissingDataForLabelException;
+import ru.itmo.stella.typechecker.exception.variant.StellaUnexpectedDataForNullaryLabelException;
 import ru.itmo.stella.typechecker.exception.variant.StellaUnexpectedVariantException;
 import ru.itmo.stella.typechecker.exception.variant.StellaUnexpectedVariantLabelException;
 import ru.itmo.stella.typechecker.type.StellaType;
@@ -25,7 +30,7 @@ public class VariantExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.VARIANT)
 			throw new StellaUnexpectedVariantException(expected, this);
 		
@@ -33,11 +38,24 @@ public class VariantExpr extends StellaExpression {
 		
 		if (!expectedVariantType.hasLabel(labelName))
 			throw new StellaUnexpectedVariantLabelException(labelName, expectedVariantType, this);
+		
+		StellaType expectedLabelType = expectedVariantType.getLabelType(labelName);
+		
+		if (expectedLabelType == StellaType.NO_TYPE && expr != null)
+			throw new StellaUnexpectedDataForNullaryLabelException(labelName);
+		else if (expectedLabelType != StellaType.NO_TYPE && expr == null)
+			throw new StellaMissingDataForLabelException(labelName, expectedLabelType);
+		
+		if (expr != null)
+			expr.checkType(context, expectedLabelType);
 	}
 
 	@Override
 	public StellaType inferType(ExpressionContext context) throws StellaException {
-		throw new StellaAmbiguousVariantTypeException();
+		if (!context.isExtensionUsed(StellaLanguageExtension.AMBIGUOUS_TYPE_AS_BOTTOM))
+			throw new StellaAmbiguousVariantTypeException();
+		
+		return new StellaVariantType(Map.of(labelName, expr.inferType(context)));
 	}
 
 	@Override

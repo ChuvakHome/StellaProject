@@ -15,10 +15,10 @@ public class SuccExpr extends StellaExpression {
 	}
 
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		argument.checkType(context, StellaType.Primitives.NAT);
 		
-		checkTypesEquality(expected, StellaType.Primitives.NAT);
+		checkTypeMatching(context, expected, StellaType.Primitives.NAT);
 	}
 
 	@Override

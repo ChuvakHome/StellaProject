@@ -1,10 +1,14 @@
 package ru.itmo.stella.typechecker.expr;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Predicate;
 
+import ru.itmo.stella.typechecker.StellaLanguageExtension;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.record.StellaMissingRecordFieldsException;
 import ru.itmo.stella.typechecker.exception.record.StellaUnexpectedRecordException;
@@ -29,40 +33,50 @@ public class RecordExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
-		StellaRecordType actualRecordType = inferType(context);
-		
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != Tag.RECORD)
 			throw new StellaUnexpectedRecordException(expected, this);
 		
 		StellaRecordType expectedRecordType = (StellaRecordType) expected;
 		
-		List<String> problemFields = findMissingFields(actualRecordType, expectedRecordType);
+		List<String> missingFields = findMissingFields(expectedRecordType);
 		
-		if (!problemFields.isEmpty())
-			throw new StellaUnexpectedRecordFieldsException(problemFields, expectedRecordType, this);
+		if (!missingFields.isEmpty())
+			throw new StellaMissingRecordFieldsException(missingFields, expectedRecordType, this);
 		
-		problemFields = findMissingFields(expectedRecordType, actualRecordType);
+		List<String> unexpectedFields = findMissingFieldsInRecord(recordFields.keySet(), expectedRecordType);
 		
-		if (!problemFields.isEmpty())
-			throw new StellaMissingRecordFieldsException(problemFields, expectedRecordType, this);
-		
-		for (String fieldName: expectedRecordType.getFields()) {
-			StellaType expectedFieldType = expectedRecordType.getFieldType(fieldName);
+		if (!unexpectedFields.isEmpty() && !context.isExtensionUsed(StellaLanguageExtension.STRUCTUAL_SUBTYPING))
+			throw new StellaUnexpectedRecordFieldsException(unexpectedFields, expectedRecordType, this);
 			
-			getField(fieldName).checkType(context, expectedFieldType);
+		for (Entry<String, StellaType> recordFieldEntry: expectedRecordType.getFieldTypes().entrySet()) {
+			String fieldName = recordFieldEntry.getKey();
+			StellaType expectedFieldType = recordFieldEntry.getValue();
+			
+			StellaExpression fieldValue = recordFields.get(fieldName);
+			
+			fieldValue.checkType(context, expectedFieldType);
 		}
 		
-		checkTypesEquality(expected, actualRecordType);
+		if (!unexpectedFields.isEmpty()) {
+			for (String extraFieldName: unexpectedFields) {
+				StellaExpression extraFieldValue = recordFields.get(extraFieldName);
+				extraFieldValue.inferType(context);
+			}
+		}
 	}
 
 	@Override
 	public StellaRecordType inferType(ExpressionContext context) throws StellaException {
 		Map<String, StellaType> fieldsTypes = new LinkedHashMap<>(recordFields.size());
 		
-		for (Map.Entry<String, StellaExpression> entry: recordFields.entrySet()) {
-			StellaType recordType = entry.getValue().inferType(context);
-			fieldsTypes.put(entry.getKey(), recordType);
+		for (Map.Entry<String, StellaExpression> recordEntry: recordFields.entrySet()) {
+			String fieldName = recordEntry.getKey();
+			StellaExpression fieldValue = recordEntry.getValue();
+			
+			StellaType fieldType = fieldValue.inferType(context);
+			
+			fieldsTypes.put(fieldName, fieldType);
 		}
 		
 		return new StellaRecordType(fieldsTypes);
@@ -82,11 +96,18 @@ public class RecordExpr extends StellaExpression {
 				);
 	}
 
-	private static List<String> findMissingFields(StellaRecordType from, StellaRecordType where) {
-		return from
-			.getFields()
+	private static List<String> findMissingFieldsInRecord(Collection<String> fields, StellaRecordType where) {
+		return 
+			fields
 			.stream()
 			.filter(field -> !where.hasField(field))
 			.toList();
+	}
+	
+	private List<String> findMissingFields(StellaRecordType where) {
+		return where.getFieldTypes().keySet()
+				.stream()
+				.filter(Predicate.not(recordFields::containsKey))
+				.toList();
 	}
 }

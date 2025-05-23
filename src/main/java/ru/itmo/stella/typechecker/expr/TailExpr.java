@@ -16,9 +16,9 @@ public class TailExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.LIST)
-			checkTypesEquality(expected, inferType(context));
+			checkTypeMatching(context, expected, inferType(context));
 		else
 			arg.checkType(context, expected);
 	}

@@ -7,8 +7,8 @@ import ru.itmo.stella.typechecker.type.StellaFunctionType;
 
 public class StellaIncorrectNumberOfArgumentsException extends StellaException {
 	public StellaIncorrectNumberOfArgumentsException(
-				StellaExpression fnExpr,
 				StellaFunctionType fnType,
+				StellaExpression fnExpr,
 				int actualArgsNumber,
 				StellaExpression callExpr
 			) {
@@ -25,4 +25,24 @@ public class StellaIncorrectNumberOfArgumentsException extends StellaException {
 					callExpr
 				);
 	}
+	
+	public StellaIncorrectNumberOfArgumentsException(
+			StellaFunctionType expectedfnType,
+			StellaFunctionType actualFnType,
+			StellaExpression expr
+		) {
+	super(StellaTypeErrorCode.ERROR_INCORRECT_NUMBER_OF_ARGUMENTS,
+				"expected %d argument(s)\\s"
+				+ "for the function of expected type\\S"
+				+ "%s\\s"
+				+ "but got %d argument(s)\\s"
+				+ "in the actual type\\S"
+				+ "%s\\s"
+				+ "when typechecking the expression\\S"
+				+ "%s",
+				expectedfnType.getArity(), expectedfnType,
+				actualFnType.getArity(), actualFnType,
+				expr
+			);
+}
 }

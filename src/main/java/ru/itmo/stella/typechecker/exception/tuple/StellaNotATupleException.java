@@ -17,7 +17,7 @@ public class StellaNotATupleException extends StellaException {
 					+ "%s\\s"
 					+ "of type\\S"
 					+ "%s\\s"
-					+ "in expression"
+					+ "in expression\\S"
 					+ "%s",
 					expr,
 					actual,

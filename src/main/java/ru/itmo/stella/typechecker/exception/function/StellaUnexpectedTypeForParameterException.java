@@ -19,14 +19,14 @@ public class StellaUnexpectedTypeForParameterException extends StellaException {
 		this.actual = actual;
 	}
 	
-	public StellaUnexpectedTypeForParameterException(StellaExpression expression, String wrongParameterName, StellaType expected, StellaType actual) {
+	public StellaUnexpectedTypeForParameterException(String wrongParameterName, StellaType expected, StellaType actual, StellaExpression expression) {
 		this(
 			String.format(
 				"expected type\\S"
 				+ "%s\\s"
 				+ "but got\\S"
 				+ "%s\\s"
-				+ "for the parameter %s"
+				+ "for the parameter %s\\s"
 				+ "in function\\S"
 				+ "%s",
 				expected,
@@ -36,6 +36,10 @@ public class StellaUnexpectedTypeForParameterException extends StellaException {
 			),
 			expression, wrongParameterName, expected, actual
 		);
+	}
+	
+	public String getWrongParameterName() {
+		return wrongParameterName;
 	}
 	
 	public StellaExpression getExpression() {

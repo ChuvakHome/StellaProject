@@ -15,7 +15,7 @@ public class LogicNotExpr extends StellaExpression {
 	}
 
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		argument.checkType(context, StellaType.Primitives.BOOL);
 	}
 

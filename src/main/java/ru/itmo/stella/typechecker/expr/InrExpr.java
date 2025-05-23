@@ -1,5 +1,6 @@
 package ru.itmo.stella.typechecker.expr;
 
+import ru.itmo.stella.typechecker.StellaLanguageExtension;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.sumtype.StellaAmbiguousSumTypeException;
 import ru.itmo.stella.typechecker.exception.sumtype.StellaUnexpectedInjectionException;
@@ -18,7 +19,7 @@ public class InrExpr extends StellaExpression {
 	}
 
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.SUM)
 			throw new StellaUnexpectedInjectionException(expected, arg);
 		
@@ -29,7 +30,12 @@ public class InrExpr extends StellaExpression {
 
 	@Override
 	public StellaType inferType(ExpressionContext context) throws StellaException {
-		throw new StellaAmbiguousSumTypeException();
+		if (!context.isExtensionUsed(StellaLanguageExtension.AMBIGUOUS_TYPE_AS_BOTTOM))
+			throw new StellaAmbiguousSumTypeException();
+		
+		StellaType rightType = arg.inferType(context);
+		
+		return new StellaSumType(StellaType.BOTTOM, rightType);
 	}
 
 	@Override
