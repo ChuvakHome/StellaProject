@@ -17,19 +17,19 @@ public class ThrowExpr extends StellaExpression {
 		return expr;
 	}
 	
+//	@Override
+//	protected void doTypeCheckConstrainted(ExpressionContext context, StellaType expected) throws StellaException {
+//		
+//	}
+	
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaType exceptionType = context.getExceptionType(); 
 		
 		if (exceptionType == null)
 			throw new StellaExceptionTypeNotDeclaredException();
 		
 		expr.checkType(context, exceptionType);
-	}
-	
-	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
-		
 	}
 
 	@Override
@@ -40,6 +40,11 @@ public class ThrowExpr extends StellaExpression {
 		throw new StellaAmbiguousThrowTypeException();
 	}
 
+	@Override
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {		
+		return getCachedType(context);
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("throw(%s)", expr);

@@ -67,7 +67,7 @@ public class PatternListExpr extends PatternExpr {
 	}
 
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.LIST)
 			throw new StellaUnexpectedPatternForTypeException(this, expected);
 		
@@ -79,12 +79,15 @@ public class PatternListExpr extends PatternExpr {
 	
 	//  TODO: Check type inference in master solution!
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	public StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		throw new StellaAmbiguousPatternTypeException(this);
 	}
 
 	@Override
 	public ExpressionContext extendContext(ExpressionContext context, StellaType expected) throws StellaException {
+		if (expected.getTypeTag() != StellaType.Tag.LIST)
+			throw new StellaUnexpectedPatternForTypeException(this, expected);
+		
 		StellaListType expectedListType = (StellaListType) expected;
 		
 		ExpressionContext emptyCtx = new ExpressionContext(context.getTypeVarCounter());

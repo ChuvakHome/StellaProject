@@ -31,13 +31,18 @@ public class PatternVarExpr extends PatternExpr {
 	}
 
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		
 	}
 	
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	public StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		throw new StellaAmbiguousPatternTypeException(this);
+	}
+	
+	@Override
+	public StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
+		return getCachedType(context);
 	}
 	
 	@Override

@@ -77,7 +77,7 @@ public class ListExpr extends StellaExpression {
 		for (int i = 1; i < elements.size(); ++i)
 			elements.get(i).checkType(context, headType);
 		
-		return new StellaListType(headType); // TODO: FIX!
+		return new StellaListType(headType);
 	}
 
 	public String toString() {

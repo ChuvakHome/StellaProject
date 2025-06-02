@@ -17,6 +17,18 @@ public class FixExpr extends StellaExpression {
 	public StellaExpression getArgument() {
 		return arg;
 	}
+	
+	@Override
+	protected void doTypeCheckConstrainted(ExpressionContext context, StellaType expected) throws StellaException {
+		StellaType retType = expected;
+		
+		StellaFunctionType fixRequiredArgType = new StellaFunctionType(
+					List.of(retType), 
+					retType
+				);
+		
+		arg.checkType(context, fixRequiredArgType);
+	}
 
 	@Override
 	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {

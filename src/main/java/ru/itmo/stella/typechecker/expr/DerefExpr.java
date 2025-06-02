@@ -36,7 +36,7 @@ public class DerefExpr extends StellaExpression {
 		if (exprType == StellaType.BOTTOM)
 			checkTypeMatching(context, new StellaRefType(expected), exprType);
 		else if (exprType.getTypeTag() != Tag.REF)
-			throw new StellaNotAReferenceException(this, exprType);
+			throw new StellaNotAReferenceException(expr, exprType);
 		else {
 			StellaRefType refExprType = (StellaRefType) exprType;
 			

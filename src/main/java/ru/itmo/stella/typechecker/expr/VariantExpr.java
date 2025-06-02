@@ -52,10 +52,10 @@ public class VariantExpr extends StellaExpression {
 
 	@Override
 	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
-		if (!context.isExtensionUsed(StellaLanguageExtension.AMBIGUOUS_TYPE_AS_BOTTOM))
-			throw new StellaAmbiguousVariantTypeException();
+		if (context.isExtensionUsed(StellaLanguageExtension.STRUCTUAL_SUBTYPING))
+			return new StellaVariantType(Map.of(labelName, expr.inferType(context)));
 		
-		return new StellaVariantType(Map.of(labelName, expr.inferType(context)));
+		throw new StellaAmbiguousVariantTypeException();
 	}
 
 	@Override

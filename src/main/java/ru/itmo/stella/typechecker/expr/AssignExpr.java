@@ -44,13 +44,13 @@ public class AssignExpr extends StellaExpression {
 	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		checkTypeMatching(context, expected, inferType(context));
 	}
-
+	
 	@Override
 	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		StellaType lhsType = lhs.inferType(context);
 		
 		if (lhsType.getTypeTag() != Tag.REF)
-			throw new StellaNotAReferenceException(this);
+			throw new StellaNotAReferenceException.StellaNotAssignableReferenceException(lhs);
 		
 		StellaRefType lhsRefType = (StellaRefType) lhsType; 
 		

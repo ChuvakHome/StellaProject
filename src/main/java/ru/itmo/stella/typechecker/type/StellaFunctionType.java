@@ -83,8 +83,6 @@ public final class StellaFunctionType extends StellaType.StellaComplexType {
 			StellaType type1 = it1.next();
 			StellaType type2 = it2.next();
 			
-//			System.out.printf("DEBUG fn equals: arg-type: %s, other arg-type: %s\n", type1, type2);
-			
 			if (!type2.equals(type1))
 				return false;
 		}

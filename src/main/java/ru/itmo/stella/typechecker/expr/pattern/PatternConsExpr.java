@@ -40,9 +40,9 @@ public class PatternConsExpr extends PatternExpr {
 		
 		return consPattern.headPattern.equals(headPattern) && consPattern.tailPattern.equals(tailPattern); 
 	}
-
+	
 	@Override
-	public void checkType(ExpressionContext ctx, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext ctx, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.LIST)
 			throw new StellaUnexpectedPatternForTypeException(this, expected);
 		
@@ -68,12 +68,26 @@ public class PatternConsExpr extends PatternExpr {
 	
 	// TODO: Check type inference in master solution!
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	public StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		throw new StellaAmbiguousPatternTypeException(this);
+	}
+	
+	@Override
+	public StellaType doTypeInferenceConstrainted(ExpressionContext ctx) throws StellaException {
+		StellaType headType = headPattern.inferType(ctx);
+		
+		StellaListType listType = new StellaListType(headType);
+		
+		tailPattern.checkType(ctx, listType);
+		
+		return listType;
 	}
 
 	@Override
 	public ExpressionContext extendContext(ExpressionContext ctx, StellaType expected) throws StellaException {
+		if (expected.getTypeTag() != StellaType.Tag.LIST)
+			throw new StellaUnexpectedPatternForTypeException(this, expected);
+		
 		StellaListType expectedListType = (StellaListType) expected;
 		
 		ExpressionContext subctx = new ExpressionContext(ctx, new LinkedHashMap<>());

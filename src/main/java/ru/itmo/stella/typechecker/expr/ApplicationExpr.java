@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import ru.itmo.stella.typechecker.StellaLanguageExtension;
 import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.function.StellaIncorrectNumberOfArgumentsException;
@@ -32,17 +31,15 @@ public class ApplicationExpr extends StellaExpression {
 	public StellaExpression getArgument(int i) {
 		return arguments.get(i);
 	}
-
+	
 	@Override
 	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaType fnRawType = fnExpr.inferType(context);
 		
-		if (fnRawType.getTypeTag() != StellaType.Tag.FUNCTION && !context.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION))
+		if (fnRawType.getTypeTag() != StellaType.Tag.FUNCTION)
 			throw new StellaNotAFunctionException(fnRawType, fnExpr, this);
 		
 		StellaFunctionType fnType = (StellaFunctionType) fnRawType;
-		
-//		System.out.println("DEBUG appExpr: " + fnExpr + ", rawType: " + fnType + " :: " + fnType.getReturnType());
 		
 		if (fnType.getArity() != arguments.size())
 			throw new StellaIncorrectNumberOfArgumentsException(
@@ -56,10 +53,6 @@ public class ApplicationExpr extends StellaExpression {
 		
 		for (int i = 0; i < arguments.size(); ++i) {
 			StellaExpression arg = arguments.get(i);
-			
-//			System.out.println("APP ARG TYPE CHECK expected: " + argsTypes.get(i));
-//			System.out.println("APP ARG TYPE CHECK actual: " + arg + " :: " + arg.inferType(context));
-//			System.out.println();
 			
 			arg.checkType(context, argsTypes.get(i));
 		}
@@ -76,16 +69,22 @@ public class ApplicationExpr extends StellaExpression {
 		
 		List<StellaType> argTypes = new ArrayList<>();
 		
-		for (StellaExpression arg: arguments)
-			argTypes.add(arg.inferType(context));
+		for (int i = 0; i < arguments.size(); ++i) {
+			StellaExpression arg = arguments.get(i);
+			
+			StellaType argType = arg.inferType(context);
+			argTypes.add(argType);
+		}
 		
-		StellaType resultType = context.newAutoTypeVar();
+		StellaType resultType = getCachedType(context);
 		
-		context.addConstraint(new StellaConstraint(
-			fnRawType, 
-			new StellaFunctionType(argTypes, resultType),
-			this
-		));
+		context.addConstraint(
+			new StellaConstraint(
+				fnRawType, 
+				new StellaFunctionType(argTypes, resultType),
+				this
+			)
+		);
 		
 		return resultType;
 	}

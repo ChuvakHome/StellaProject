@@ -38,14 +38,14 @@ public class PatternAscExpr extends PatternExpr {
 	}
 
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		checkTypesEqualityForPattern(ascPattern, expected, ascType);
 		
 		ascPattern.checkType(context, ascType);
 	}
 	
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	public StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		ascPattern.checkType(context, ascType);
 		
 		return ascType;

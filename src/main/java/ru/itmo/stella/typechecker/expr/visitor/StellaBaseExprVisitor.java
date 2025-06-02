@@ -79,7 +79,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Sequence p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Sequence p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -92,7 +92,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Assign p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Assign p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -105,7 +105,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(If p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(If p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -118,7 +118,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Let p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Let p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -131,7 +131,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(LetRec p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(LetRec p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -144,37 +144,85 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(TypeAbstraction p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(TypeAbstraction p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
 	@Override
 	public StellaOptional<StellaExpression> visit(LessThan p, StellaTypechecker.TypecheckContext ctx) {
+		try {
+			return StellaOptional.of(doVisit(p, ctx));
+		} catch (StellaException e) {
+			return StellaOptional.of(StellaExpression.class, e);
+		}
+	}
+	
+	protected StellaExpression doVisit(LessThan p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
 	@Override
 	public StellaOptional<StellaExpression> visit(LessThanOrEqual p, StellaTypechecker.TypecheckContext ctx) {
+		try {
+			return StellaOptional.of(doVisit(p, ctx));
+		} catch (StellaException e) {
+			return StellaOptional.of(StellaExpression.class, e);
+		}
+	}
+	
+	protected StellaExpression doVisit(LessThanOrEqual p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
 	@Override
 	public StellaOptional<StellaExpression> visit(GreaterThan p, StellaTypechecker.TypecheckContext ctx) {
+		try {
+			return StellaOptional.of(doVisit(p, ctx));
+		} catch (StellaException e) {
+			return StellaOptional.of(StellaExpression.class, e);
+		}
+	}
+	
+	protected StellaExpression doVisit(GreaterThan p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
 	@Override
 	public StellaOptional<StellaExpression> visit(GreaterThanOrEqual p, StellaTypechecker.TypecheckContext ctx) {
+		try {
+			return StellaOptional.of(doVisit(p, ctx));
+		} catch (StellaException e) {
+			return StellaOptional.of(StellaExpression.class, e);
+		}
+	}
+	
+	protected StellaExpression doVisit(GreaterThanOrEqual p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
 	@Override
 	public StellaOptional<StellaExpression> visit(Equal p, StellaTypechecker.TypecheckContext ctx) {
+		try {
+			return StellaOptional.of(doVisit(p, ctx));
+		} catch (StellaException e) {
+			return StellaOptional.of(StellaExpression.class, e);
+		}
+	}
+	
+	protected StellaExpression doVisit(Equal p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
 	@Override
 	public StellaOptional<StellaExpression> visit(NotEqual p, StellaTypechecker.TypecheckContext ctx) {
+		try {
+			return StellaOptional.of(doVisit(p, ctx));
+		} catch (StellaException e) {
+			return StellaOptional.of(StellaExpression.class, e);
+		}
+	}
+	
+	protected StellaExpression doVisit(NotEqual p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -187,7 +235,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(TypeAsc p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(TypeAsc p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -200,7 +248,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(TypeCast p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(TypeCast p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -213,7 +261,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Abstraction p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Abstraction p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -226,7 +274,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Variant p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Variant p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -239,7 +287,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Match p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Match p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -252,7 +300,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(List p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(List p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -265,7 +313,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Add p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Add p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -278,7 +326,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Subtract p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Subtract p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -291,7 +339,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(LogicOr p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(LogicOr p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -304,7 +352,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Multiply p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Multiply p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -317,7 +365,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Divide p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Divide p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -330,7 +378,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(LogicAnd p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(LogicAnd p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -343,7 +391,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Ref p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Ref p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -356,7 +404,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Deref p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Deref p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -369,7 +417,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Application p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Application p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -382,7 +430,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(TypeApplication p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(TypeApplication p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -395,7 +443,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(DotRecord p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(DotRecord p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -408,7 +456,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(DotTuple p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(DotTuple p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -421,7 +469,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Tuple p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Tuple p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -434,7 +482,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Record p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Record p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -447,7 +495,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(ConsList p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(ConsList p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -460,7 +508,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Head p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Head p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -473,7 +521,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(IsEmpty p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(IsEmpty p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -486,7 +534,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Tail p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Tail p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -499,7 +547,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Panic p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Panic p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -512,7 +560,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Throw p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Throw p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -525,7 +573,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(TryCatch p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(TryCatch p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -538,7 +586,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(TryWith p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(TryWith p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -551,7 +599,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(TryCastAs p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(TryCastAs p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -564,7 +612,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Inl p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Inl p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -577,7 +625,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Inr p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Inr p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -590,7 +638,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Succ p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Succ p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -603,7 +651,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(LogicNot p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(LogicNot p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -616,7 +664,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Pred p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Pred p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -629,7 +677,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(IsZero p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(IsZero p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -642,7 +690,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Fix p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Fix p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -655,7 +703,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(NatRec p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(NatRec p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -678,7 +726,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(ConstTrue p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(ConstTrue p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -691,7 +739,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(ConstFalse p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(ConstFalse p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -704,7 +752,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(ConstUnit p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(ConstUnit p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -717,7 +765,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(ConstInt p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(ConstInt p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -730,7 +778,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(ConstMemory p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(ConstMemory p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 
@@ -743,7 +791,7 @@ public class StellaBaseExprVisitor implements StellaExprVisitor {
 		}
 	}
 	
-	public StellaExpression doVisit(Var p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
+	protected StellaExpression doVisit(Var p, StellaTypechecker.TypecheckContext ctx) throws StellaException {
 		return null;
 	}
 }

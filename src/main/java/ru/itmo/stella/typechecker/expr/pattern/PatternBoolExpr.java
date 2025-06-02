@@ -29,12 +29,12 @@ public class PatternBoolExpr extends PatternExpr {
 	}
 
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		checkTypesEquality(expected, StellaType.Primitives.BOOL);
 	}
 	
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	public StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		return StellaType.Primitives.BOOL;
 	}
 

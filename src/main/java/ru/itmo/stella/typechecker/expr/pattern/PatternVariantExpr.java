@@ -1,7 +1,9 @@
 package ru.itmo.stella.typechecker.expr.pattern;
 
+import java.util.Map;
 import java.util.Objects;
 
+import ru.itmo.stella.typechecker.StellaLanguageExtension;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.pattern.StellaAmbiguousPatternTypeException;
 import ru.itmo.stella.typechecker.exception.pattern.StellaUnexpectedNonNullaryVariantPatternException;
@@ -42,7 +44,7 @@ public class PatternVariantExpr extends PatternExpr {
 	}
 
 	@Override
-	public void checkType(ExpressionContext ctx, StellaType expected) throws StellaException {
+	public void doTypeCheck(ExpressionContext ctx, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.VARIANT)
 			throw new StellaUnexpectedPatternForTypeException(this, expected);
 		
@@ -62,12 +64,18 @@ public class PatternVariantExpr extends PatternExpr {
 	}
 	
 	@Override
-	public StellaType inferType(ExpressionContext ctx) throws StellaException {
-		throw new StellaAmbiguousPatternTypeException(this);
+	public StellaType doTypeInference(ExpressionContext ctx) throws StellaException {
+		if (ctx.isExtensionUsed(StellaLanguageExtension.STRUCTUAL_SUBTYPING)) {
+			return new StellaVariantType(Map.of(labelName, labelPattern.inferType(ctx)));
+		} else
+			throw new StellaAmbiguousPatternTypeException(this);
 	}
 
 	@Override
-	public ExpressionContext extendContext(ExpressionContext ctx, StellaType expected) throws StellaException {		
+	public ExpressionContext extendContext(ExpressionContext ctx, StellaType expected) throws StellaException {
+		if (expected.getTypeTag() != StellaType.Tag.VARIANT)
+			throw new StellaUnexpectedPatternForTypeException(this, expected);
+		
 		StellaVariantType expectedVariantType = (StellaVariantType) expected;
 		
 		return labelPattern == null ? ctx : labelPattern.extendContext(ctx, expectedVariantType.getLabelType(labelName)); 

@@ -63,7 +63,7 @@ public abstract class StellaExpression {
 		return doTypeInference(context);
 	}
 	
-	protected StellaType inferType(ExpressionContext context) throws StellaException {
+	public StellaType inferType(ExpressionContext context) throws StellaException {
 		return context.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION)
 				? doTypeInferenceConstrainted(context)
 				: doTypeInference(context)

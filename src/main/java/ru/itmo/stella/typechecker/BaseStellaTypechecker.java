@@ -109,27 +109,12 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 		parser.program().result.accept(visitor, errorRecords);
 		
 		Set<StellaConstraint> constraints = visitor.getConstraints();
-		constraints.forEach(System.out::println);
-//		
-		System.out.println("\n=== UNIFICATION ===\n");
-		
-		constraints.forEach(constraint -> {
-			System.out.println(constraint + " :: " + constraint.getRelatedExpression());
-			System.out.println("LEFT: " + constraint.getLeftTypeVariables());
-			System.out.println("RIGHT: " + constraint.getRightTypeVariables());
-			
-			System.out.println();
-		});
 		
 		try {
 			Deque<StellaConstraint> sortedConstraints = new ArrayDeque<>();
 			sortedConstraints.addAll(constraints);
 			
 			Set<StellaConstraint> unifiedConstraints = unify(sortedConstraints);
-			
-			unifiedConstraints.forEach(c -> {
-				System.out.println("UNIFIED: " + c + " :: " + c.getRelatedExpression());
-			});
 			
 			resolveUnifiedConstraints(unifiedConstraints);
 		} catch (StellaException e) {
@@ -174,137 +159,6 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 		}
 	}
 	
-//	private Stack<StellaConstraint> toposortConstraints(Set<StellaConstraint> constraints) throws StellaException {
-//		Map<StellaTypeVar, List<StellaConstraint>> dependentConstraints = new HashMap<>();
-//		
-//		Set<StellaConstraint> rootConstraints = new HashSet<>();
-//		
-//		constraints.forEach(constraint -> {
-//			StellaType leftType = constraint.getLeftType();
-//			StellaType rightType = constraint.getRightType();
-//			
-//			if (leftType instanceof StellaTypeVar) {
-//				Set<StellaTypeVar> rightTypeVars = constraint.getRightTypeVariables();
-//				
-////				if (rightTypeVars.isEmpty())
-////					rootConstraints.add(constraint);
-////				else {
-////					rightTypeVars.forEach(rightTypeVar -> {
-////						if (!dependentConstraints.containsKey(rightTypeVar))
-////							dependentConstraints.put(rightTypeVar, new ArrayList<>());
-////						
-////						dependentConstraints.get(rightTypeVar).add(constraint);
-////					});
-////				}
-//				
-//				rightTypeVars.forEach(rightTypeVar -> {
-//					if (!dependentConstraints.containsKey(rightTypeVar))
-//						dependentConstraints.put(rightTypeVar, new ArrayList<>());
-//					
-//					dependentConstraints.get(rightTypeVar).add(constraint);
-//				});
-//				
-//				rootConstraints.add(constraint);
-//			} else if (rightType instanceof StellaTypeVar) {
-//				Set<StellaTypeVar> leftTypeVars = constraint.getLeftTypeVariables();
-//				
-////				if (leftTypeVars.isEmpty())
-////					rootConstraints.add(constraint);
-////				else {
-////					leftTypeVars.forEach(leftTypeVar -> {
-////						if (!dependentConstraints.containsKey(leftTypeVar))
-////							dependentConstraints.put(leftTypeVar, new ArrayList<>());
-////						
-////						dependentConstraints.get(leftTypeVar).add(constraint);
-////					});
-////				}
-//				
-//				leftTypeVars.forEach(leftTypeVar -> {
-//					if (!dependentConstraints.containsKey(leftTypeVar))
-//						dependentConstraints.put(leftTypeVar, new ArrayList<>());
-//					
-//					dependentConstraints.get(leftTypeVar).add(constraint);
-//				});
-//				
-//				rootConstraints.add(constraint);
-//			} else {
-//				constraint.getLeftTypeVariables().forEach(typeVar -> {
-//					if (!dependentConstraints.containsKey(typeVar))
-//						dependentConstraints.put(typeVar, new ArrayList<>());
-//					
-//					dependentConstraints.get(typeVar).add(constraint);
-//				});
-//				
-//				constraint.getRightTypeVariables().forEach(typeVar -> {
-//					if (!dependentConstraints.containsKey(typeVar))
-//						dependentConstraints.put(typeVar, new ArrayList<>());
-//					
-//					dependentConstraints.get(typeVar).add(constraint);
-//				});
-//			}
-//		});
-//		
-//		Stack<StellaConstraint> constraintStack = new Stack<>();
-//		constraintStack.addAll(rootConstraints);
-//		
-//		Set<StellaConstraint> visited = new HashSet<>();
-//		Stack<StellaConstraint> orderedConstraints = new Stack<>();
-//		
-//		while (!constraintStack.isEmpty()) {
-//			StellaConstraint constraint = constraintStack.pop();
-//			
-//			if (visited.contains(constraint))
-//				continue;
-//			
-//			StellaType leftType = constraint.getLeftType();
-//			StellaType rightType = constraint.getRightType();
-//			
-//			if (leftType.getTypeTag() == Tag.TYPE_VAR || rightType.getTypeTag() == Tag.TYPE_VAR) {
-//				Collection<StellaConstraint> dependencies;
-//				
-//				Collection<StellaTypeVar> typeVars;
-//				
-//				if (leftType instanceof StellaTypeVar typeVar) {
-//					dependencies = dependentConstraints.getOrDefault(typeVar, new ArrayList<>());
-//					dependentConstraints.remove(typeVar);
-//					
-//					typeVars = constraint.getRightTypeVariables();
-//				} else /* if (rightType instanceof StellaTypeVar typeVar) */ {
-//					StellaTypeVar typeVar = (StellaTypeVar) rightType;
-//					
-//					dependencies = dependentConstraints.getOrDefault(typeVar, new ArrayList<>());
-//					dependentConstraints.remove(typeVar);
-//					
-//					typeVars = constraint.getLeftTypeVariables();
-//				}
-//				
-//				typeVars.forEach(tv -> {
-//					dependencies.addAll(
-//						Optional.ofNullable(dependentConstraints.get(tv)).orElse(List.of())
-//					);
-//					dependentConstraints.remove(tv);
-//				});
-//				
-//				if (dependencies.isEmpty()) {
-//					orderedConstraints.push(constraint);
-//
-//					visited.add(constraint);
-//				} else {
-//					constraintStack.add(constraint);
-//					constraintStack.addAll(dependencies);
-//				}
-//			} else {
-//				constraintStack.addAll(
-//					unifyConstraint(constraint)
-//				);
-//				
-//				visited.add(constraint);
-//			}
-//		}
-//		
-//		return orderedConstraints;
-//	}
-	
 	private Collection<StellaConstraint> unifyConstraint(StellaConstraint constraint) throws StellaException {
 		Set<StellaConstraint> producedConstraints = new LinkedHashSet<>();
 		
@@ -321,10 +175,8 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 				StellaFunctionType leftFn = (StellaFunctionType) leftType;
 				StellaFunctionType rightFn = (StellaFunctionType) rightType;
 				
-				if (leftFn.getArity() != rightFn.getArity()) {
-					// TODO: Process unequal arity case
+				if (leftFn.getArity() != rightFn.getArity())
 					throw new StellaIncorrectNumberOfArgumentsException(rightFn, leftFn, constraint.getRelatedExpression());
-				}
 				
 				Iterator<StellaType> leftFnArgsIter = leftFn.getArgumensTypes().values().iterator();
 				Iterator<StellaType> rightFnArgsIter = rightFn.getArgumensTypes().values().iterator();
@@ -460,8 +312,6 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 		Set<StellaConstraint> unfiedConstraints = new LinkedHashSet<>(); 
 		StellaConstraint constraint = constraints.poll();
 		
-		System.out.println("DEBUG UNIFY: " + constraint);
-		
 		StellaType leftType = constraint.getLeftType();
 		StellaType rightType = constraint.getRightType();
 		
@@ -471,7 +321,22 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 			StellaType replaceType, replacementType;
 			Set<StellaTypeVar> typeVariables;
 			
-			if (leftType.getTypeTag() == Tag.TYPE_VAR) {
+			if (leftType.getTypeTag() == Tag.TYPE_VAR && rightType.getTypeTag() == Tag.TYPE_VAR) {
+				StellaTypeVar leftTypeVar = (StellaTypeVar) leftType;
+				StellaTypeVar rightTypeVar = (StellaTypeVar) rightType;
+				
+				if (leftTypeVar.getVarName().compareToIgnoreCase(rightTypeVar.getVarName()) >= 0) {
+					replaceType = leftType;
+					replacementType = rightType;
+					
+					typeVariables = constraint.getRightTypeVariables();
+				} else {
+					replaceType = rightType;
+					replacementType = leftType;
+					
+					typeVariables = constraint.getLeftTypeVariables();
+				}
+			} else if (leftType.getTypeTag() == Tag.TYPE_VAR) {
 				replaceType = leftType;
 				replacementType = rightType;
 				
@@ -483,7 +348,7 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 				typeVariables = constraint.getLeftTypeVariables();
 			}
 			
-			if (typeVariables.contains(replaceType))
+			if (typeVariables.contains(replaceType) && !replaceType.equals(replacementType))
 				throw new StellaOccursCheckInfiniteTypeException(replaceType, replacementType, constraint.getRelatedExpression());
 			
 			for (StellaConstraint c: constraints) {
@@ -497,9 +362,12 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 			}
 			
 			constraints = subconstraints;
-		} else if (leftType.getTypeTag() == Tag.PRIMITIVE && rightType.getTypeTag() == Tag.PRIMITIVE)
-			unfiedConstraints.add(constraint);
-		else
+		} else if (leftType.getTypeTag() == Tag.PRIMITIVE && rightType.getTypeTag() == Tag.PRIMITIVE) {
+			if (leftType.equals(rightType))
+				unfiedConstraints.add(constraint);
+			else
+				throw new StellaUnexpectedTypeWhenUnifyingExpressionException(constraint.getRelatedExpression(), rightType, leftType);
+		} else
 			unifyConstraint(constraint).forEach(constraints::addFirst);
 		
 		unfiedConstraints.addAll(unify(constraints));
@@ -612,8 +480,6 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 			constraints = context.getConstraints();
 			
 			return null;
-			
-//			return super.visit(p, errorsList);
 		}
 		
 		protected StellaOptional<StellaFunctionType> parseFuncDecl(ru.itmo.stella.lang.Absyn.DeclFun p) {
@@ -873,7 +739,6 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 
 		@Override
 		public StellaOptional<StellaType> visit(NoReturnType p, ExpressionContext ctx) {
-//			return ThrowingOptional.of(StellaType.Primitives.UNIT);
 			return null;
 		}
 

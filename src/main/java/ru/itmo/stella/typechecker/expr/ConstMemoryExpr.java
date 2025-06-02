@@ -26,8 +26,6 @@ public class ConstMemoryExpr extends StellaExpression {
 	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != Tag.REF)
 			throw new StellaUnexpectedReferenceException(expected, this);
-		
-//		StellaRefType expectedRefType = (StellaRefType) expected;
 	}
 
 	@Override

@@ -30,21 +30,6 @@ public class IfThenStellaExpr extends StellaExpression {
 		return falseExpr;
 	}
 	
-//	@Override
-//	protected void doTypeCheckConstrainted(ExpressionContext context, StellaType expected) throws StellaException {
-//		StellaType conditionType = conditionExpr.inferType(context);
-//		StellaType thenBranchType = trueExpr.inferType(context);
-//		StellaType elseBranchType = falseExpr.inferType(context);
-//		
-//		context.addConstraints(
-//			List.of(
-//				new StellaConstraint(conditionType, StellaType.Primitives.BOOL, conditionExpr),
-//				new StellaConstraint(thenBranchType, expected, trueExpr),
-//				new StellaConstraint(elseBranchType, expected, falseExpr)
-//			)
-//		);
-//	}
-	
 	@Override
 	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		conditionExpr.checkType(context, StellaType.Primitives.BOOL);
@@ -56,22 +41,6 @@ public class IfThenStellaExpr extends StellaExpression {
 			throw new StellaUnexpectedTypeForExpressionException(this, expected, trueExpr.inferType(context));
 		}
 	}
-	
-//	@Override
-//	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
-//		StellaType conditionType = conditionExpr.inferType(context);
-//		StellaType thenBranchType = trueExpr.inferType(context);
-//		StellaType elseBranchType = falseExpr.inferType(context);
-//		
-//		context.addConstraints(
-//			List.of(
-//				new StellaConstraint(conditionType, StellaType.Primitives.BOOL, conditionExpr),
-//				new StellaConstraint(thenBranchType, elseBranchType, trueExpr)
-//			)
-//		);
-//		
-//		return thenBranchType;
-//	}
 
 	@Override
 	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
