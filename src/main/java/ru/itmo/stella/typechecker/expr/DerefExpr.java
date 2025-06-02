@@ -1,5 +1,6 @@
 package ru.itmo.stella.typechecker.expr;
 
+import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.reference.StellaNotAReferenceException;
 import ru.itmo.stella.typechecker.type.StellaRefType;
@@ -18,7 +19,18 @@ public class DerefExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckConstrainted(ExpressionContext context, StellaType expected) throws StellaException {
+		StellaType exprType = expr.inferType(context);
+		
+		StellaRefType expectedRefenceType = new StellaRefType(expected);
+		
+		context.addConstraint(
+					new StellaConstraint(exprType, expectedRefenceType, expr)
+				);
+	}
+	
+	@Override
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaType exprType = expr.inferType(context);
 		
 		if (exprType == StellaType.BOTTOM)
@@ -33,7 +45,7 @@ public class DerefExpr extends StellaExpression {
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		StellaType exprType = expr.inferType(context);
 		
 		if (exprType.getTypeTag() != Tag.REF)
@@ -42,6 +54,19 @@ public class DerefExpr extends StellaExpression {
 		StellaRefType refExprType = (StellaRefType) exprType;
 		
 		return refExprType.getReferencedType();
+	}
+	
+	@Override
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
+		StellaType exprType = expr.inferType(context);
+		
+		StellaType referencedType = getCachedType(context);
+		
+		context.addConstraint(
+					new StellaConstraint(exprType, new StellaRefType(referencedType), expr)
+				);
+		
+		return referencedType;
 	}
 
 	@Override

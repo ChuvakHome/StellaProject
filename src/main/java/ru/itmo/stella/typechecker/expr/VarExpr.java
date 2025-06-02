@@ -18,14 +18,24 @@ public class VarExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaType type = inferType(context);
 		
 		checkTypeMatching(context, expected, type);
 	}
-
+	
+//	@Override
+//	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
+//		StellaType type = context.getVarType(varName);
+//		
+//		if (type != null)
+//			return type;
+//		
+//		return getCachedType(context);
+//	}
+	
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		return Optional.ofNullable(context.getVarType(varName)).orElseThrow(() -> new StellaUndefinedVariableException(varName));
 	}
 	

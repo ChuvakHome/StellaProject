@@ -12,17 +12,17 @@ public class LogicAndExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		left.checkType(context, StellaType.Primitives.BOOL);
 		right.checkType(context, StellaType.Primitives.BOOL);
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
-		StellaType leftExprType = left.inferType(context);
-		right.checkType(context, leftExprType);
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
+		left.checkType(context, StellaType.Primitives.BOOL);
+		right.checkType(context, StellaType.Primitives.BOOL);
 		
-		return leftExprType;
+		return StellaType.Primitives.BOOL;
 	}
 
 	public String toString() {

@@ -6,7 +6,7 @@ import ru.itmo.stella.typechecker.type.StellaType;
 public abstract class StellaConstExpression extends StellaExpression {
 
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaType actual = inferType(context);
 		
 		checkTypeMatching(context, expected, actual);

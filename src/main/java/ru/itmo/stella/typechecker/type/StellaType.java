@@ -22,6 +22,10 @@ public abstract class StellaType {
 		
 		TOP,
 		BOTTOM,
+		
+		TYPE_VAR,
+		
+		FOR_ALL_TYPE,
 	}
 	
 	private final Tag tag;
@@ -38,8 +42,31 @@ public abstract class StellaType {
 		return equals(type) || type == StellaType.TOP;
 	}
 	
+	public abstract StellaType replaceType(StellaType replace, StellaType replacement);
+	
+	public boolean equalsFast(StellaType type) {
+		if (type.getTypeTag() == Tag.TYPE_VAR)
+			return type.equals(this);
+		
+		return false;
+	}
+	
+	public abstract boolean equalsStrict(StellaType type);
+	
+	public boolean equalsWeak(StellaType type) {
+		if (equalsFast(type))
+			return true;
+		
+		return equalsStrict(type);
+	}
+	
 	@Override
-	public abstract boolean equals(Object o);
+	public boolean equals(Object o) {
+		if (o instanceof StellaType stellaType)
+			return equalsWeak(stellaType);
+		
+		return false;
+	}
 	
 	protected abstract List<? extends PatternExpr> checkPatternsExhaustivenessForType(Collection<? extends PatternExpr> patterns) throws StellaException;
 	
@@ -62,12 +89,23 @@ public abstract class StellaType {
 	}
 	
 	public static abstract class StellaPrimitiveType extends StellaType {
+		public static enum PrimitiveTypeKind {
+			NAT,
+			BOOL,
+			UNIT
+		}
+		
 		public StellaPrimitiveType() {
 			super(StellaType.Tag.PRIMITIVE);
 		}
 		
-		public boolean equals(Object o) {
-			return o == this;
+		@Override
+		public StellaType replaceType(StellaType replace, StellaType replacement) {
+			return this;
+		}
+		
+		public boolean equalsStrict(StellaType stellaType) {
+			return stellaType == this;
 		}
 	}
 	
@@ -78,13 +116,11 @@ public abstract class StellaType {
 		
 		public abstract boolean equalsType(StellaType type);
 		
-		public boolean equals(Object o) {
-			if (!(o instanceof StellaType))
-				return false;
+		public boolean equalsStrict(StellaType otherType) {
+			Tag tag = getTypeTag();
+			Tag otherTag = otherType.getTypeTag();
 			
-			StellaType otherType = (StellaType) o;
-			
-			if (otherType.getTypeTag() != getTypeTag())
+			if (tag != otherTag)
 				return false;
 			
 			return equalsType(otherType);

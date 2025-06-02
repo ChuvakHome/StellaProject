@@ -57,7 +57,8 @@ public class PatternVariantExpr extends PatternExpr {
 		else if (expectedLabelType != StellaType.NO_TYPE && labelPattern == null)
 			throw new StellaUnexpectedNullaryVariantPatternException(labelName, expectedVariantType, this);
 		
-		labelPattern.checkType(extendContext(ctx, expectedVariantType), expectedVariantType.getLabelType(labelName));
+		if (labelPattern != null)
+			labelPattern.checkType(extendContext(ctx, expectedVariantType), expectedVariantType.getLabelType(labelName));
 	}
 	
 	@Override
@@ -69,7 +70,7 @@ public class PatternVariantExpr extends PatternExpr {
 	public ExpressionContext extendContext(ExpressionContext ctx, StellaType expected) throws StellaException {		
 		StellaVariantType expectedVariantType = (StellaVariantType) expected;
 		
-		return labelPattern.extendContext(ctx, expectedVariantType.getLabelType(labelName)); 
+		return labelPattern == null ? ctx : labelPattern.extendContext(ctx, expectedVariantType.getLabelType(labelName)); 
 	}
 	
 	@Override
@@ -79,6 +80,9 @@ public class PatternVariantExpr extends PatternExpr {
 
 	@Override
 	public String toString() {
-		return String.format("<| %s = %s |>", labelName, labelPattern);
+		return labelPattern == null
+			? String.format("<| %s |>", labelName)
+			: String.format("<| %s = %s |>", labelName, labelPattern)
+			;
 	}
 }

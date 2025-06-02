@@ -9,6 +9,8 @@ public abstract class PatternExpr  {
 	private final Tag patternTag;
 	
 	public static enum Tag {
+		EMPTY,
+		
 		ASC,
 		
 		UNIT,

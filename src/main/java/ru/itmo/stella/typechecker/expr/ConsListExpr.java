@@ -23,7 +23,7 @@ public class ConsListExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected == StellaType.TOP)
 			inferType(context);
 		else {
@@ -38,7 +38,7 @@ public class ConsListExpr extends StellaExpression {
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		StellaType headType = head.inferType(context);
 		
 		StellaListType listType = new StellaListType(headType);

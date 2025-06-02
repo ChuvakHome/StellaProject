@@ -32,6 +32,14 @@ public class StellaSumType extends StellaType.StellaComplexType {
 	}
 	
 	@Override
+	public StellaType replaceType(StellaType replace, StellaType replacement) {
+		left = left.replaceType(replace, replacement);
+		right = right.replaceType(replace, replacement);
+		
+		return this;
+	}
+	
+	@Override
 	protected List<? extends PatternExpr> checkPatternsExhaustivenessForType(Collection<? extends PatternExpr> patterns) throws StellaException {
 		List<PatternExpr> inlPatterns = new ArrayList<>();
 		List<PatternExpr> inrPatterns = new ArrayList<>();

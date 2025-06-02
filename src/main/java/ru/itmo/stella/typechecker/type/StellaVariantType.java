@@ -45,6 +45,19 @@ public class StellaVariantType extends StellaComplexType {
 	}
 	
 	@Override
+	public StellaType replaceType(StellaType replace, StellaType replacement) {
+		for (Map.Entry<String, StellaType> labelEntry: variantLabelsTypes.entrySet()) {
+			StellaType argType = labelEntry.getValue();
+			
+			labelEntry.setValue(
+				argType.replaceType(replace, replacement)
+			);
+		}
+		
+		return this;
+	}
+	
+	@Override
 	protected List<? extends PatternExpr> checkPatternsExhaustivenessForType(Collection<? extends PatternExpr> patterns) throws StellaException {
 		Map<String, List<PatternExpr>> fieldsPatterns = new LinkedHashMap<>();
 		
@@ -53,6 +66,8 @@ public class StellaVariantType extends StellaComplexType {
 		
 		for (PatternExpr pattern: patterns) {
 			switch (pattern.getPatternTag()) {
+				case VAR:
+					return Collections.emptyList();
 				case VARIANT:
 					PatternVariantExpr variantPattern = (PatternVariantExpr) pattern;
 					

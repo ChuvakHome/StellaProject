@@ -19,7 +19,7 @@ public class BoolConstExpr extends StellaConstExpression {
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		return StellaType.Primitives.BOOL;
 	}
 	

@@ -16,10 +16,20 @@ public class StellaTopType extends StellaType {
 	protected List<? extends PatternExpr> checkPatternsExhaustivenessForType(Collection<? extends PatternExpr> patterns) throws StellaException {
 		return Collections.emptyList();
 	}
+	
+	@Override
+	public StellaType replaceType(StellaType replace, StellaType replacement) {
+		return this;
+	}
 
 	@Override
-	public boolean equals(Object o) {
-		return o == this;
+	public boolean equalsWeak(StellaType stellaType) {
+		return equalsFast(stellaType) || stellaType == this;
+	}
+	
+	@Override
+	public boolean equalsStrict(StellaType stellaType) {
+		return stellaType == this;
 	}
 	
 	@Override

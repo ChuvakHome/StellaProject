@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.expr.pattern.PatternBoolExpr;
@@ -43,6 +44,10 @@ public class StellaBoolType extends StellaType.StellaPrimitiveType {
 			return Arrays.asList(new PatternBoolExpr(false));
 		
 		return Collections.emptyList();
+	}
+	
+	public int hashCode() {
+		return Objects.hash(StellaType.Tag.PRIMITIVE, PrimitiveTypeKind.BOOL);
 	}
 	
 	public String toString() {

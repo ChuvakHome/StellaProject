@@ -3,6 +3,7 @@ package ru.itmo.stella.typechecker.expr;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.reference.StellaAmbiguousReferenceTypeException;
 import ru.itmo.stella.typechecker.exception.reference.StellaUnexpectedReferenceException;
+import ru.itmo.stella.typechecker.type.StellaRefType;
 import ru.itmo.stella.typechecker.type.StellaType;
 import ru.itmo.stella.typechecker.type.StellaType.Tag;
 
@@ -14,7 +15,15 @@ public class ConstMemoryExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected StellaRefType getCachedType(ExpressionContext context) {
+		if (cachedInferedType == null)
+			cachedInferedType = new StellaRefType(context.newAutoTypeVar());
+		
+		return (StellaRefType) cachedInferedType;
+	}
+	
+	@Override
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != Tag.REF)
 			throw new StellaUnexpectedReferenceException(expected, this);
 		
@@ -22,8 +31,13 @@ public class ConstMemoryExpr extends StellaExpression {
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		throw new StellaAmbiguousReferenceTypeException();
+	}
+	
+	@Override
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
+		return getCachedType(context);
 	}
 
 	@Override

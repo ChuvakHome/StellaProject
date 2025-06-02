@@ -21,13 +21,13 @@ public class TryWithExpr extends StellaExpression {
 	}
 
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		tryExpr.checkType(context, expected);
 		withExpr.checkType(context, expected);
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		StellaType tryExprType = tryExpr.inferType(context);
 		
 		withExpr.checkType(context, tryExprType);

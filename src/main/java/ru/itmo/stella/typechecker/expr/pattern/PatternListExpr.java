@@ -87,7 +87,7 @@ public class PatternListExpr extends PatternExpr {
 	public ExpressionContext extendContext(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaListType expectedListType = (StellaListType) expected;
 		
-		ExpressionContext emptyCtx = new ExpressionContext();
+		ExpressionContext emptyCtx = new ExpressionContext(context.getTypeVarCounter());
 		ExpressionContext subctx = new ExpressionContext(context, new LinkedHashMap<>());
 		
 		for (PatternExpr pattern: patterns) {

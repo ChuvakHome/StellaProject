@@ -30,7 +30,7 @@ public class NatRecExpr extends StellaExpression {
 	}
 
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		iterCountExpr.checkType(context, StellaType.Primitives.NAT);
 		initValueExpr.checkType(context, expected);
 		
@@ -46,7 +46,7 @@ public class NatRecExpr extends StellaExpression {
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		iterCountExpr.checkType(context, StellaType.Primitives.NAT);
 		
 		StellaType initValueType = initValueExpr.inferType(context);

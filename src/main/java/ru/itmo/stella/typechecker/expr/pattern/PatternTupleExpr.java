@@ -85,7 +85,7 @@ public class PatternTupleExpr extends PatternExpr {
 	public ExpressionContext extendContext(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaTupleType expecteTupleType = (StellaTupleType) expected;
 		
-		ExpressionContext emptyCtx = new ExpressionContext();
+		ExpressionContext emptyCtx = new ExpressionContext(context.getTypeVarCounter());
 		ExpressionContext subctx = new ExpressionContext(context, new LinkedHashMap<>());
 		
 		Iterator<PatternExpr> patternIter = patterns.iterator();

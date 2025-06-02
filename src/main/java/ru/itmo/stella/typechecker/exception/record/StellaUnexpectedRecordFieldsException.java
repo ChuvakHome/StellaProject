@@ -26,4 +26,27 @@ public class StellaUnexpectedRecordFieldsException extends StellaException {
 			recordExpr
 		);
 	}
+	
+	public StellaUnexpectedRecordFieldsException(
+			List<String> unexpectedFields, 
+			StellaRecordType expectedType,
+			StellaRecordType actualType,
+			StellaExpression recordExpr) 
+	{
+		super(
+			StellaTypeErrorCode.ERROR_UNEXPECTED_RECORD_FIELDS,
+			"unexpected fields\\S"
+			+ "%s\\s"
+			+ "for an expected record type\\S"
+			+ "%s\\s"
+			+ "in the actual type\\S"
+			+ "%s\\s"
+			+ "when typechecking the expression\\S"
+			+ "%s",
+			String.join(", ", unexpectedFields),
+			expectedType,
+			actualType,
+			recordExpr
+		);
+	}
 }

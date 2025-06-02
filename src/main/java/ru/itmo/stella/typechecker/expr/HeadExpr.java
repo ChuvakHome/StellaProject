@@ -1,5 +1,6 @@
 package ru.itmo.stella.typechecker.expr;
 
+import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.list.StellaNotAListException;
 import ru.itmo.stella.typechecker.type.StellaListType;
@@ -17,11 +18,25 @@ public class HeadExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {arg.checkType(context, new StellaListType(expected));
+	protected void doTypeCheckConstrainted(ExpressionContext context, StellaType expected) throws StellaException {
+		StellaType argType = arg.inferType(context);
+		
+		context.addConstraint(
+					new StellaConstraint(
+						argType,
+						new StellaListType(getCachedType(context)),
+						this
+					)
+				);
+	}
+	
+	@Override
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+		arg.checkType(context, new StellaListType(expected));
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		StellaType argType = arg.inferType(context);
 		
 		if (argType.getTypeTag() != StellaType.Tag.LIST)
@@ -30,6 +45,23 @@ public class HeadExpr extends StellaExpression {
 		StellaListType argListType = (StellaListType) argType;
 		
 		return argListType.getElementType();
+	}
+	
+	@Override
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
+		StellaType argType = arg.inferType(context);
+		
+		StellaType elementListType = getCachedType(context);
+		
+		context.addConstraint(
+					new StellaConstraint(
+						argType,
+						new StellaListType(elementListType),
+						this
+					)
+				);
+		
+		return elementListType;
 	}
 
 	public String toString() {

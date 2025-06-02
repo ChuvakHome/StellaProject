@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.expr.pattern.PatternExpr;
@@ -19,6 +20,10 @@ public final class StellaUnitType extends StellaType.StellaPrimitiveType {
 		return patterns.stream().anyMatch(p -> p.getPatternTag() == PatternExpr.Tag.UNIT) 
 				? Collections.emptyList()
 				: Arrays.asList(new PatternUnitExpr());
+	}
+	
+	public int hashCode() {
+		return Objects.hash(StellaType.Tag.PRIMITIVE, PrimitiveTypeKind.UNIT);
 	}
 	
 	public String toString() {

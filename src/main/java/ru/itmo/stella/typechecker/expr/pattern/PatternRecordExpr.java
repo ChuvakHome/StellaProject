@@ -98,7 +98,7 @@ public class PatternRecordExpr extends PatternExpr {
 	public ExpressionContext extendContext(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaRecordType expecteRecordType = (StellaRecordType) expected;
 		
-		ExpressionContext emptyCtx = new ExpressionContext();
+		ExpressionContext emptyCtx = new ExpressionContext(context.getTypeVarCounter());
 		ExpressionContext subctx = new ExpressionContext(context, new LinkedHashMap<>());
 		
 		for (Entry<String, StellaType> recordFieldEntry: expecteRecordType.getFieldTypes().entrySet()) {

@@ -1,6 +1,7 @@
 package ru.itmo.stella.typechecker.expr;
 
 import ru.itmo.stella.typechecker.exception.StellaException;
+import ru.itmo.stella.typechecker.exception.StellaUnexpectedTypeWhenUnifyingExpressionException;
 import ru.itmo.stella.typechecker.exception.reference.StellaUnexpectedReferenceException;
 import ru.itmo.stella.typechecker.type.StellaRefType;
 import ru.itmo.stella.typechecker.type.StellaType;
@@ -18,7 +19,20 @@ public class RefExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckConstrainted(ExpressionContext context, StellaType expected) throws StellaException {
+		if (expected.getTypeTag() != StellaType.Tag.REF && expected.getTypeTag() != StellaType.Tag.TYPE_VAR)
+			throw new StellaUnexpectedTypeWhenUnifyingExpressionException(this, expected, inferType(context));
+		
+		if (expected.getTypeTag() == StellaType.Tag.TYPE_VAR)
+			super.doTypeCheckConstrainted(context, expected);
+		
+		StellaRefType expectedRef = (StellaRefType) expected;
+		
+		expr.checkType(context, expectedRef.getReferencedType());
+	}
+	
+	@Override
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != Tag.REF)
 			throw new StellaUnexpectedReferenceException(expected, this);
 		
@@ -28,7 +42,7 @@ public class RefExpr extends StellaExpression {
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		return new StellaRefType(expr.inferType(context));
 	}
 

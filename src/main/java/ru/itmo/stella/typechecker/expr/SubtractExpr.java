@@ -12,17 +12,17 @@ public class SubtractExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		left.checkType(context, StellaType.Primitives.NAT);
 		right.checkType(context, StellaType.Primitives.NAT);
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
-		StellaType leftExprType = left.inferType(context);
-		right.checkType(context, leftExprType);
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
+		left.checkType(context, StellaType.Primitives.NAT);
+		right.checkType(context, StellaType.Primitives.NAT);
 		
-		return leftExprType;
+		return StellaType.Primitives.BOOL;
 	}
 
 	public String toString() {

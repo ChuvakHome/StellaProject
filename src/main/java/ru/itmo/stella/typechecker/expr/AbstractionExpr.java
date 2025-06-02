@@ -23,7 +23,7 @@ public class AbstractionExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.FUNCTION)
 			throw new StellaUnexpectedLambdaException(expected, this);
 		
@@ -61,10 +61,11 @@ public class AbstractionExpr extends StellaExpression {
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		ExpressionContext subctx = new ExpressionContext(context, fnArgs);
 		
 		StellaType returnType = fnBody.inferType(subctx);
+		context.addConstraints(subctx.getConstraints());
 		
 		return new StellaFunctionType(fnArgs, returnType);
 	}

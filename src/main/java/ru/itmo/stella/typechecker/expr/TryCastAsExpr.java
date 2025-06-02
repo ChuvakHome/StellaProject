@@ -50,7 +50,7 @@ public class TryCastAsExpr extends StellaExpression {
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		tryPattern.checkType(context, castType);
 		
 		StellaType patternExprType = patternExpr.inferType(context);

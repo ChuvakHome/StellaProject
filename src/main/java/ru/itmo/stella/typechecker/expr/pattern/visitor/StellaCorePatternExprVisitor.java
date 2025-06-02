@@ -94,8 +94,8 @@ public class StellaCorePatternExprVisitor extends StellaBasePatternExprVisitor {
 		String label = p.stellaident_;
 		PatternExpr labelPattern = null;
 		
-		if (p.patterndata_ instanceof SomePatternData somePattern)
-			labelPattern = somePattern.pattern_.accept(this, ctx).get();
+		if (p.patterndata_ instanceof SomePatternData someData)
+			labelPattern = someData.pattern_.accept(this, ctx).get();
 		
 		return new PatternVariantExpr(label, labelPattern);
 	}

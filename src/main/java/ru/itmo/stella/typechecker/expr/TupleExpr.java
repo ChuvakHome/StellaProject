@@ -28,7 +28,29 @@ public class TupleExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckConstrainted(ExpressionContext context, StellaType expected) throws StellaException {		
+		if (expected instanceof StellaTupleType expectedTupleType) {
+			if (expectedTupleType.getFieldsCount() != tupleComponents.size()) {
+				StellaTupleType actualType = (StellaTupleType) doTypeInferenceConstrainted(context); 
+				
+				throw new StellaUnexpectedTupleLengthException(expectedTupleType, actualType, this);
+			}
+			
+			Iterator<StellaExpression> tupleComponentsIterator = tupleComponents.iterator();
+			Iterator<StellaType> fieldTypesIterator = expectedTupleType.getFieldTypes().iterator();
+			
+			while (tupleComponentsIterator.hasNext() && fieldTypesIterator.hasNext()) {
+				StellaExpression tupleComponent = tupleComponentsIterator.next();
+				StellaType expectedFieldType = fieldTypesIterator.next();
+				
+				tupleComponent.checkType(context, expectedFieldType);
+			}
+		} else
+			super.doTypeCheckConstrainted(context, expected);
+	}
+	
+	@Override
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected == StellaType.TOP)
 			checkTypeMatching(context, expected, inferType(context));
 		else {
@@ -55,7 +77,7 @@ public class TupleExpr extends StellaExpression {
 	}
 
 	@Override
-	public StellaTupleType inferType(ExpressionContext context) throws StellaException {
+	protected StellaTupleType doTypeInference(ExpressionContext context) throws StellaException {
 		List<StellaType> componentsTypes = new ArrayList<>(tupleComponents.size());
 		
 		for (StellaExpression expr: tupleComponents)

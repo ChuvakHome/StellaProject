@@ -1,6 +1,6 @@
 package ru.itmo.stella.typechecker.expr;
 
-import java.util.Arrays;
+import java.util.List;
 
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.function.StellaNotAFunctionException;
@@ -19,14 +19,14 @@ public class FixExpr extends StellaExpression {
 	}
 
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaType argType = arg.inferType(context);
 		
 		if (argType.getTypeTag() != StellaType.Tag.FUNCTION)
 			throw new StellaNotAFunctionException(argType, arg, this);
 		
 		StellaFunctionType fixRequiredArgType = new StellaFunctionType(
-					Arrays.asList(expected), 
+					List.of(expected), 
 					expected
 				);
 		
@@ -34,7 +34,7 @@ public class FixExpr extends StellaExpression {
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		StellaType argType = arg.inferType(context);
 		
 		if (argType.getTypeTag() != StellaType.Tag.FUNCTION)
@@ -45,7 +45,21 @@ public class FixExpr extends StellaExpression {
 		StellaType retType = argFnType.getReturnType();
 		
 		StellaFunctionType fixRequiredArgType = new StellaFunctionType(
-					Arrays.asList(retType), 
+					List.of(retType), 
+					retType
+				);
+		
+		arg.checkType(context, fixRequiredArgType);
+		
+		return retType;
+	}
+	
+	@Override
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
+		StellaType retType = getCachedType(context);
+		
+		StellaFunctionType fixRequiredArgType = new StellaFunctionType(
+					List.of(retType), 
 					retType
 				);
 		

@@ -27,7 +27,7 @@ public class PatternSuccExpr extends PatternExpr {
 	public boolean equalsPattern(PatternExpr p) {
 		return ((PatternSuccExpr) p).succArgPattern.equals(succArgPattern);
 	}
-
+	
 	@Override
 	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
 		checkTypesEquality(expected, StellaType.Primitives.NAT);

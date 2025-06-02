@@ -53,7 +53,7 @@ public class PatternConsExpr extends PatternExpr {
 	}
 	
 	private void extendContext0(ExpressionContext subctx, PatternExpr pattern, StellaType expected) throws StellaException {
-		ExpressionContext emptyCtx = new ExpressionContext();
+		ExpressionContext emptyCtx = new ExpressionContext(subctx.getTypeVarCounter());
 		ExpressionContext emptySubctx = new ExpressionContext(emptyCtx, new LinkedHashMap<>());
 		
 		ExpressionContext extendedCtx = pattern.extendContext(emptySubctx, expected);

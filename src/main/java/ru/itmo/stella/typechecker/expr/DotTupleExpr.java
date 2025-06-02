@@ -1,5 +1,8 @@
 package ru.itmo.stella.typechecker.expr;
 
+import java.util.List;
+
+import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.tuple.StellaNotATupleException;
 import ru.itmo.stella.typechecker.exception.tuple.StellaTupleIndexOutOfBoundsException;
@@ -16,12 +19,37 @@ public class DotTupleExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckConstrainted(ExpressionContext context, StellaType expected) throws StellaException {
+		if (number <= 0 || number > 2)
+			throw new StellaTupleIndexOutOfBoundsException(number, this);
+		
+		StellaType exprType = tupleExpr.inferType(context);
+		
+		List<StellaType> tupleFieldsTypes = List.of(context.newAutoTypeVar(), context.newAutoTypeVar());
+		
+		context.addConstraints(
+					List.of(
+						new StellaConstraint(
+							exprType,
+							new StellaTupleType(tupleFieldsTypes),
+							tupleExpr
+						),
+						new StellaConstraint(
+							tupleFieldsTypes.get(number - 1),
+							expected,
+							this
+						)
+					)
+				);
+	}
+	
+	@Override
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		checkTypeMatching(context, expected, inferType(context));
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		StellaType exprType = tupleExpr.inferType(context);
 		
 		if (exprType.getTypeTag() != StellaType.Tag.TUPLE)
@@ -37,6 +65,26 @@ public class DotTupleExpr extends StellaExpression {
 		return tupleType.getFieldType(number - 1);
 	}
 
+	@Override
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
+		if (number <= 0 || number > 2)
+			throw new StellaTupleIndexOutOfBoundsException(number, this);
+		
+		StellaType exprType = tupleExpr.inferType(context);
+		
+		List<StellaType> tupleFieldsTypes = List.of(context.newAutoTypeVar(), context.newAutoTypeVar());
+		
+		context.addConstraint(
+					new StellaConstraint(
+						exprType,
+						new StellaTupleType(tupleFieldsTypes),
+						tupleExpr
+					)
+				);
+		
+		return tupleFieldsTypes.get(number - 1);
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("%s.%d", tupleExpr, number);

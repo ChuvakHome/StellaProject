@@ -1,6 +1,7 @@
 package ru.itmo.stella.typechecker.type;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import ru.itmo.stella.typechecker.exception.StellaException;
@@ -15,13 +16,22 @@ public class StellaNoType extends StellaType {
 		return "";
 	}
 
+	public StellaType replaceType(StellaType replace, StellaType replacement) {
+		return this;
+	}
+	
 	@Override
-	public boolean equals(Object o) {
-		return o == StellaType.NO_TYPE;
+	public boolean equalsWeak(StellaType stellaType) {
+		return stellaType == StellaType.NO_TYPE;
+	}
+	
+	@Override
+	public boolean equalsStrict(StellaType stellaType) {
+		return stellaType == StellaType.NO_TYPE;
 	}
 
 	@Override
 	protected List<? extends PatternExpr> checkPatternsExhaustivenessForType(Collection<? extends PatternExpr> patterns) throws StellaException {
-		return null;
+		return Collections.emptyList();
 	}
 }

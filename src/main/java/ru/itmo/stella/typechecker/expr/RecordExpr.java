@@ -33,7 +33,7 @@ public class RecordExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != Tag.RECORD)
 			throw new StellaUnexpectedRecordException(expected, this);
 		
@@ -67,7 +67,7 @@ public class RecordExpr extends StellaExpression {
 	}
 
 	@Override
-	public StellaRecordType inferType(ExpressionContext context) throws StellaException {
+	protected StellaRecordType doTypeInference(ExpressionContext context) throws StellaException {
 		Map<String, StellaType> fieldsTypes = new LinkedHashMap<>(recordFields.size());
 		
 		for (Map.Entry<String, StellaExpression> recordEntry: recordFields.entrySet()) {

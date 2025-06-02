@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,7 +22,8 @@ public class StellaRecordType extends StellaComplexType {
 	public StellaRecordType(Map<String, StellaType> fieldTypes) {
 		super(StellaType.Tag.RECORD);
 		
-		this.fieldsTypes = Collections.unmodifiableMap(fieldTypes);
+//		this.fieldsTypes = Collections.unmodifiableMap(fieldTypes);
+		this.fieldsTypes = new LinkedHashMap<>(fieldTypes);
 	}
 	
 	public int getFieldsCount() {
@@ -42,6 +44,19 @@ public class StellaRecordType extends StellaComplexType {
 	
 	public StellaType getFieldType(String fieldName) {
 		return fieldsTypes.get(fieldName);
+	}
+	
+	@Override
+	public StellaType replaceType(StellaType replace, StellaType replacement) {
+		for (Map.Entry<String, StellaType> fieldEntry: fieldsTypes.entrySet()) {
+			StellaType fieldType = fieldEntry.getValue();
+			
+			fieldEntry.setValue(
+				fieldType.replaceType(replace, replacement)
+			);
+		}
+		
+		return this;
 	}
 	
 	private List<? extends PatternExpr> checkPatternsExhaustivenessSingle(Collection<? extends PatternExpr> patterns) throws StellaException {
