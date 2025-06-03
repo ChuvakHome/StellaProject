@@ -34,6 +34,8 @@ This repository contains the code of typechecker for simple functional programmi
   * #type-cast
   * #top-type, #bottom-type
   * #ambiguous-type-as-bottom
+  * #type-reconstruction
+  * #universal-types
 
 - errors:
 	* ERROR_MISSING_MAIN
@@ -93,6 +95,13 @@ This repository contains the code of typechecker for simple functional programmi
 	* ERROR_UNEXPECTED_REFERENCE
 	
 	* ERROR_NONEXHAUSTIVE_CATCH_PATTERNS
+
+
+	* ERROR_OCCURS_CHECK_INFINITE_TYPE,
+	
+	* ERROR_NOT_A_GENERIC_FUNCTION,
+	* ERROR_INCORRECT_NUMBER_OF_TYPE_ARGUMENTS,
+	* ERROR_UNDEFINED_TYPE_VARIABLE,
 
 ## Requirements:
 - JDK 17 or later
