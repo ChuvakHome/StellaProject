@@ -25,6 +25,7 @@ import ru.itmo.stella.lang.Absyn.ARecordFieldType;
 import ru.itmo.stella.lang.Absyn.AVariantFieldType;
 import ru.itmo.stella.lang.Absyn.Decl;
 import ru.itmo.stella.lang.Absyn.DeclFun;
+import ru.itmo.stella.lang.Absyn.DeclFunGeneric;
 import ru.itmo.stella.lang.Absyn.NoReturnType;
 import ru.itmo.stella.lang.Absyn.NoTyping;
 import ru.itmo.stella.lang.Absyn.OptionalTyping;
@@ -424,14 +425,45 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 				fnType.getArgumensTypes().forEach((argName, argType) -> subctx.add(argName, argType));
 				subctx.add(fnName, genericFnType);
 				
-				StellaExpression fnBody = p.expr_.accept(
-						exprVisitor,
-						new TypecheckContext(errorsList, subctx)
-					).get();
-			
-				fnBody.checkType(subctx, fnType.getReturnType());
+				ExpressionContext oldContext = context;
+				context = subctx;
 				
-				context.add(fnName, genericFnType);
+				try {
+					for (Decl decl: p.listdecl_) {
+						if (decl instanceof DeclFun nestedDeclFun) {
+							String nestedFnName = nestedDeclFun.stellaident_;
+							
+							nestedDeclFun.accept(this, errorsList);
+							
+							StellaFunctionType nestedFnStellaType = parseFuncDecl(nestedDeclFun).get();
+							subctx.add(nestedFnName, nestedFnStellaType);
+						} else if (decl instanceof DeclFunGeneric nestedDeclFunGeneric) { 
+							String nestedFnName = nestedDeclFunGeneric.stellaident_;
+							List<StellaTypeVar> typeVariables = nestedDeclFunGeneric.liststellaident_.stream().map(StellaTypeVar::new).toList();
+							
+							nestedDeclFunGeneric.accept(this, errorsList);
+							
+							ExpressionContext genericFnSubctx = new ExpressionContext(subctx);
+							typeVariables.forEach(genericFnSubctx::addTypeVariable);
+							
+							StellaFunctionType nestedFnStellaType = parseGenericFuncDecl(nestedDeclFunGeneric, genericFnSubctx).get();
+							StellaType genericNestedFnType = new StellaForAllType(typeVariables, nestedFnStellaType);
+							
+							subctx.add(nestedFnName, genericNestedFnType);
+						}
+					}
+					
+					StellaExpression fnBody = p.expr_.accept(
+							exprVisitor,
+							new TypecheckContext(errorsList, subctx)
+						).get();
+					fnBody.checkType(subctx, fnType.getReturnType());
+				} catch (StellaException e) {
+					errorsList.add(e);
+				}
+				
+				oldContext.addConstraints(context.getConstraints());
+				context = oldContext;
 			} catch (StellaException e) {
 				errorsList.add(e);
 			}
@@ -445,6 +477,7 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 			
 			try {
 				StellaFunctionType fnStellaType = parseFuncDecl(p).get();
+				context.add(fnName, fnStellaType);
 				
 				ExpressionContext subctx = new ExpressionContext(context, fnStellaType.getArgumensTypes(), context.getTypeVarCounter());
 				
@@ -460,6 +493,19 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 							
 							StellaFunctionType nestedFnStellaType = parseFuncDecl(nestedDeclFun).get();
 							subctx.add(nestedFnName, nestedFnStellaType);
+						} else if (decl instanceof DeclFunGeneric nestedDeclFunGeneric) {
+							String nestedFnName = nestedDeclFunGeneric.stellaident_;
+							List<StellaTypeVar> typeVariables = nestedDeclFunGeneric.liststellaident_.stream().map(StellaTypeVar::new).toList();
+							
+							nestedDeclFunGeneric.accept(this, errorsList);
+							
+							ExpressionContext genericFnSubctx = new ExpressionContext(subctx);
+							typeVariables.forEach(genericFnSubctx::addTypeVariable);
+							
+							StellaFunctionType nestedFnStellaType = parseGenericFuncDecl(nestedDeclFunGeneric, genericFnSubctx).get();
+							StellaType genericNestedFnType = new StellaForAllType(typeVariables, nestedFnStellaType);
+							
+							subctx.add(nestedFnName, genericNestedFnType);
 						}
 					}
 					
@@ -475,7 +521,6 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 				
 				oldContext.addConstraints(context.getConstraints());
 				context = oldContext;
-				context.add(fnName, fnStellaType);
 			} catch (StellaException e) {
 				errorsList.add(e);
 			}
