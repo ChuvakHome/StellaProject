@@ -2,6 +2,7 @@ package ru.itmo.stella.typechecker.expr;
 
 import java.util.List;
 
+import ru.itmo.stella.typechecker.StellaLanguageExtension;
 import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.tuple.StellaNotATupleException;
@@ -44,18 +45,27 @@ public class DotTupleExpr extends StellaExpression {
 	}
 	
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		checkTypeMatching(context, expected, inferType(context));
+	}
+	
+	@Override
+	public StellaType inferType(ExpressionContext context) throws StellaException {
+		StellaType exprType = tupleExpr.inferType(context);
+		
+		if (exprType.getTypeTag() != StellaType.Tag.TUPLE) {
+			if (exprType.getTypeTag() != StellaType.Tag.TYPE_VAR || !context.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION))
+				throw new StellaNotATupleException(tupleExpr, exprType, this);
+			
+			return doTypeInferenceConstrainted(context);
+		}
+		
+		return doTypeInference(context);
 	}
 
 	@Override
 	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
-		StellaType exprType = tupleExpr.inferType(context);
-		
-		if (exprType.getTypeTag() != StellaType.Tag.TUPLE)
-			throw new StellaNotATupleException(tupleExpr, exprType, this);
-		
-		StellaTupleType tupleType = (StellaTupleType) exprType;
+		StellaTupleType tupleType = (StellaTupleType) tupleExpr.inferType(context);
 		
 		if (number <= 0)
 			throw new StellaTupleIndexOutOfBoundsException(number, this);

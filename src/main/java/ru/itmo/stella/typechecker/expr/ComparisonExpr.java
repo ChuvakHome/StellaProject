@@ -21,7 +21,7 @@ public abstract class ComparisonExpr extends StellaExpression {
 	}
 	
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		left.checkType(context, StellaType.Primitives.NAT);
 		right.checkType(context, StellaType.Primitives.NAT);
 	}

@@ -110,7 +110,7 @@ public class StellaListType extends StellaType.StellaComplexType {
 		
 		StellaListType listType = (StellaListType) type;
 		
-		return listType.elementType.equals(elementType);
+		return listType.elementType.equalsStrict(elementType);
 	}
 	
 	@Override

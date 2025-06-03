@@ -34,7 +34,7 @@ public class ListExpr extends StellaExpression {
 	}
 	
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.LIST)
 			throw new StellaUnexpectedListException(expected, this);
 		

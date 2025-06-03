@@ -19,7 +19,7 @@ public class InlExpr extends StellaExpression {
 	}
 
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.SUM)
 			throw new StellaUnexpectedInjectionException(expected, arg);
 		

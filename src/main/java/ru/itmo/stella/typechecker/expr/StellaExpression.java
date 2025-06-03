@@ -34,11 +34,9 @@ public abstract class StellaExpression {
 		return cachedInferedType;
 	}
 	
-	protected abstract void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException;
+	protected abstract void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException;
 	
 	protected void doTypeCheckConstrainted(ExpressionContext context, StellaType expected) throws StellaException {
-//		doTypeCheck(context, expected);
-		
 		context.addConstraint(
 			new StellaConstraint(
 				inferType(context),
@@ -48,11 +46,16 @@ public abstract class StellaExpression {
 		);
 	}
 	
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+		if (context.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION))
+			doTypeCheckConstrainted(context, expected);
+		else
+			doTypeCheckSimple(context, expected);
+	}
+	
 	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected == StellaType.TOP)
 			checkTypeMatching(context, expected, inferType(context));
-		else if (context.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION))
-			doTypeCheckConstrainted(context, expected);
 		else
 			doTypeCheck(context, expected);
 	}

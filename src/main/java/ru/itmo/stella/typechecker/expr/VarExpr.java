@@ -18,7 +18,7 @@ public class VarExpr extends StellaExpression {
 	}
 	
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaType type = inferType(context);
 		
 		checkTypeMatching(context, expected, type);

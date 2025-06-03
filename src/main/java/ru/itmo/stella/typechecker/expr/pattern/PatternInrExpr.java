@@ -3,6 +3,7 @@ package ru.itmo.stella.typechecker.expr.pattern;
 import java.util.Objects;
 
 import ru.itmo.stella.typechecker.StellaLanguageExtension;
+import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.pattern.StellaAmbiguousPatternTypeException;
 import ru.itmo.stella.typechecker.exception.pattern.StellaUnexpectedPatternForTypeException;
@@ -33,7 +34,7 @@ public class PatternInrExpr extends PatternExpr {
 	}
 
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.SUM)
 			throw new StellaUnexpectedPatternForTypeException(this, expected);
 		
@@ -61,10 +62,18 @@ public class PatternInrExpr extends PatternExpr {
 	
 	@Override
 	public ExpressionContext extendContext(ExpressionContext context, StellaType expected) throws StellaException {
-		if (expected.getTypeTag() != StellaType.Tag.SUM)
-			throw new StellaUnexpectedPatternForTypeException(this, expected);
+		StellaSumType expectedSumType;
 		
-		StellaSumType expectedSumType = (StellaSumType) expected;
+		if (expected.getTypeTag() == StellaType.Tag.TYPE_VAR) {
+			expectedSumType = new StellaSumType(context.newAutoTypeVar(), context.newAutoTypeVar());
+			
+			context.addConstraint(
+						new StellaConstraint(expected, expectedSumType, this)
+					);
+		} else if (expected.getTypeTag() == StellaType.Tag.SUM)
+			expectedSumType = (StellaSumType) expected;
+		else
+			throw new StellaUnexpectedPatternForTypeException(this, expected);
 		
 		return inrExpr.extendContext(context, expectedSumType.getRightType());
 	}

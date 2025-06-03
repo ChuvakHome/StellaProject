@@ -33,7 +33,7 @@ public class RecordExpr extends StellaExpression {
 	}
 	
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != Tag.RECORD)
 			throw new StellaUnexpectedRecordException(expected, this);
 		

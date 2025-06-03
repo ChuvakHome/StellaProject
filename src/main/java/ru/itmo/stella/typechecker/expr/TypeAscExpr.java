@@ -27,7 +27,7 @@ public class TypeAscExpr extends StellaExpression {
 	}
 	
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		subexpr.checkType(context, type);
 		
 		checkTypeMatching(context, expected, type);

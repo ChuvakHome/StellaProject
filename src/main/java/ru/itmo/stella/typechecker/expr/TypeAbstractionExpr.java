@@ -29,7 +29,7 @@ public class TypeAbstractionExpr extends StellaExpression {
 	}
 	
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		checkTypeMatching(context, expected, inferType(context));
 		
 //		if (expected.getTypeTag() != Tag.FOR_ALL_TYPE)

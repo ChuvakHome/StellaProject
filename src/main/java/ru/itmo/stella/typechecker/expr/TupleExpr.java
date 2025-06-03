@@ -50,7 +50,7 @@ public class TupleExpr extends StellaExpression {
 	}
 	
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected == StellaType.TOP)
 			checkTypeMatching(context, expected, inferType(context));
 		else {

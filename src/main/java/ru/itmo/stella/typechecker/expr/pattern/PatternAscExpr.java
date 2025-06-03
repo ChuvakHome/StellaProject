@@ -38,7 +38,7 @@ public class PatternAscExpr extends PatternExpr {
 	}
 
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		checkTypesEqualityForPattern(ascPattern, expected, ascType);
 		
 		ascPattern.checkType(context, ascType);

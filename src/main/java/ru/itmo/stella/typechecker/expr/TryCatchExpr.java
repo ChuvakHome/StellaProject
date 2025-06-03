@@ -24,7 +24,7 @@ public class TryCatchExpr extends StellaExpression {
 	}
 	
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		tryExpr.checkType(context, expected);
 		
 		StellaType exceptionType = context.getExceptionType();
@@ -55,7 +55,7 @@ public class TryCatchExpr extends StellaExpression {
 	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		StellaType tryExprType = tryExpr.inferType(context);
 		
-		doTypeCheck(context, tryExprType);
+		doTypeCheckSimple(context, tryExprType);
 		
 		return tryExprType;
 	}

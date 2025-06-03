@@ -21,7 +21,7 @@ public class SequenceExpr extends StellaExpression {
 	}
 	
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		expr1.checkType(context, StellaType.Primitives.UNIT);
 		
 		expr2.checkType(context, expected);

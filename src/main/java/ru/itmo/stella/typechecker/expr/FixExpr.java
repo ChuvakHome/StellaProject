@@ -2,6 +2,7 @@ package ru.itmo.stella.typechecker.expr;
 
 import java.util.List;
 
+import ru.itmo.stella.typechecker.StellaLanguageExtension;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.function.StellaNotAFunctionException;
 import ru.itmo.stella.typechecker.type.StellaFunctionType;
@@ -31,7 +32,7 @@ public class FixExpr extends StellaExpression {
 	}
 
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaType argType = arg.inferType(context);
 		
 		if (argType.getTypeTag() != StellaType.Tag.FUNCTION)
@@ -44,15 +45,24 @@ public class FixExpr extends StellaExpression {
 		
 		arg.checkType(context, fixRequiredArgType);
 	}
+	
+	@Override
+	public StellaType inferType(ExpressionContext context) throws StellaException {
+		StellaType argType = arg.inferType(context);
+		
+		if (argType.getTypeTag() != StellaType.Tag.FUNCTION) {
+			if (argType.getTypeTag() != StellaType.Tag.TYPE_VAR || !context.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION))
+				throw new StellaNotAFunctionException(argType, arg, this);
+			
+			return doTypeInferenceConstrainted(context);
+		}
+		
+		return doTypeInference(context);
+	}
 
 	@Override
 	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
-		StellaType argType = arg.inferType(context);
-		
-		if (argType.getTypeTag() != StellaType.Tag.FUNCTION)
-			throw new StellaNotAFunctionException(argType, arg, this);
-		
-		StellaFunctionType argFnType = (StellaFunctionType) argType;
+		StellaFunctionType argFnType = (StellaFunctionType) arg.inferType(context);
 		
 		StellaType retType = argFnType.getReturnType();
 		

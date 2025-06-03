@@ -54,7 +54,7 @@ public class StellaConstraint {
 		if (leftTag != rightTag)
 			return false;
 		
-		return leftType.equals(rightType);
+		return leftType.equalsStrict(rightType);
 	}
 	
 	public int hashCode() {

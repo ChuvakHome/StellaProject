@@ -1,10 +1,12 @@
 package ru.itmo.stella.typechecker.expr;
 
+import ru.itmo.stella.typechecker.StellaLanguageExtension;
 import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.list.StellaNotAListException;
 import ru.itmo.stella.typechecker.type.StellaListType;
 import ru.itmo.stella.typechecker.type.StellaType;
+import ru.itmo.stella.typechecker.type.StellaType.Tag;
 
 public class IsEmptyExpr extends StellaExpression {
 	private StellaExpression arg;
@@ -18,20 +20,31 @@ public class IsEmptyExpr extends StellaExpression {
 	}
 	
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaType argType = arg.inferType(context);
 		
 		if (argType.getTypeTag() != StellaType.Tag.LIST)
 			throw new StellaNotAListException(argType, arg, this);
+		
+		checkTypeMatching(context, expected, StellaType.Primitives.BOOL);
 	}
 
 	@Override
-	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
+	public StellaType inferType(ExpressionContext context) throws StellaException {
 		StellaType argType = arg.inferType(context);
 		
-		if (argType.getTypeTag() != StellaType.Tag.LIST)
-			throw new StellaNotAListException(argType, arg, this);
+		if (argType.getTypeTag() != StellaType.Tag.LIST) {
+			if (argType.getTypeTag() != Tag.TYPE_VAR || !context.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION))
+				throw new StellaNotAListException(argType, arg, this);
 		
+			return doTypeInferenceConstrainted(context);
+		}
+	
+		return doTypeInference(context);
+	}
+	
+	@Override
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		return StellaType.Primitives.BOOL;
 	}
 	

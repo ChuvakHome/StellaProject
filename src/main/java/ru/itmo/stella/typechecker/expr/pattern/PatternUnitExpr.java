@@ -21,7 +21,7 @@ public class PatternUnitExpr extends PatternExpr {
 	}
 
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		checkTypesEquality(expected, StellaType.Primitives.UNIT);
 	}
 	

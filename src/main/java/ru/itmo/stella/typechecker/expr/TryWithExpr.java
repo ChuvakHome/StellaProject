@@ -21,7 +21,7 @@ public class TryWithExpr extends StellaExpression {
 	}
 
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		tryExpr.checkType(context, expected);
 		withExpr.checkType(context, expected);
 	}

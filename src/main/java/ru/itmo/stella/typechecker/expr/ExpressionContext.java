@@ -111,7 +111,7 @@ public class ExpressionContext  {
 	}
 	
 	public void addConstraint(StellaConstraint constraint) {
-		if (!constraint.isPrimitive())
+//		if (!constraint.isPrimitive())
 			constraints.add(constraint);
 	}
 	

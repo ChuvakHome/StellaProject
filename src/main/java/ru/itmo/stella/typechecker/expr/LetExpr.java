@@ -60,7 +60,7 @@ public class LetExpr extends StellaExpression {
 	}
 	
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		ExpressionContext subctx = createExtendedContext(context);
 		
 		expression.checkType(subctx, expected);
@@ -71,6 +71,17 @@ public class LetExpr extends StellaExpression {
 		ExpressionContext subctx = createExtendedContext(context);
 		
 		return expression.inferType(subctx);
+	}
+	
+	@Override
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {		
+		ExpressionContext subctx = createExtendedContext(context);
+		
+		StellaType inferedType = expression.inferType(subctx);
+		
+		context.addConstraints(subctx.getConstraints());
+		
+		return inferedType;
 	}
 	
 	@Override

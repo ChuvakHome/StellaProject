@@ -109,6 +109,7 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 		parser.program().result.accept(visitor, errorRecords);
 		
 		Set<StellaConstraint> constraints = visitor.getConstraints();
+//		constraints.forEach(System.out::println);
 		
 		try {
 			Deque<StellaConstraint> sortedConstraints = new ArrayDeque<>();
@@ -312,6 +313,8 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 		Set<StellaConstraint> unfiedConstraints = new LinkedHashSet<>(); 
 		StellaConstraint constraint = constraints.poll();
 		
+//		System.out.println("DEBUG unify: " + constraint);
+		
 		StellaType leftType = constraint.getLeftType();
 		StellaType rightType = constraint.getRightType();
 		
@@ -348,7 +351,7 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 				typeVariables = constraint.getLeftTypeVariables();
 			}
 			
-			if (typeVariables.contains(replaceType) && !replaceType.equals(replacementType))
+			if (typeVariables.contains(replaceType) && !replaceType.equalsStrict(replacementType))
 				throw new StellaOccursCheckInfiniteTypeException(replaceType, replacementType, constraint.getRelatedExpression());
 			
 			for (StellaConstraint c: constraints) {

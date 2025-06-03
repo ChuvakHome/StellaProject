@@ -3,6 +3,7 @@ package ru.itmo.stella.typechecker.expr.pattern;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 
+import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.pattern.StellaAmbiguousPatternTypeException;
 import ru.itmo.stella.typechecker.exception.pattern.StellaDuplicatePatternVariableException;
@@ -42,7 +43,7 @@ public class PatternConsExpr extends PatternExpr {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext ctx, StellaType expected) throws StellaException {
+	public void doTypeCheckSimple(ExpressionContext ctx, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.LIST)
 			throw new StellaUnexpectedPatternForTypeException(this, expected);
 		
@@ -85,10 +86,18 @@ public class PatternConsExpr extends PatternExpr {
 
 	@Override
 	public ExpressionContext extendContext(ExpressionContext ctx, StellaType expected) throws StellaException {
-		if (expected.getTypeTag() != StellaType.Tag.LIST)
-			throw new StellaUnexpectedPatternForTypeException(this, expected);
+		StellaListType expectedListType;
 		
-		StellaListType expectedListType = (StellaListType) expected;
+		if (expected.getTypeTag() == StellaType.Tag.TYPE_VAR) {
+			expectedListType = new StellaListType(ctx.newAutoTypeVar());
+			
+			ctx.addConstraint(
+						new StellaConstraint(expected, expectedListType, this)
+					);
+		} else if (expected.getTypeTag() == StellaType.Tag.LIST)
+			expectedListType = (StellaListType) expected;
+		else
+			throw new StellaUnexpectedPatternForTypeException(this, expected);
 		
 		ExpressionContext subctx = new ExpressionContext(ctx, new LinkedHashMap<>());
 		

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ru.itmo.stella.typechecker.StellaLanguageExtension;
 import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.function.StellaIncorrectNumberOfArgumentsException;
@@ -33,7 +34,7 @@ public class ApplicationExpr extends StellaExpression {
 	}
 	
 	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaType fnRawType = fnExpr.inferType(context);
 		
 		if (fnRawType.getTypeTag() != StellaType.Tag.FUNCTION)
@@ -59,13 +60,24 @@ public class ApplicationExpr extends StellaExpression {
 		
 		checkTypeMatching(context, expected, fnType.getReturnType());
 	}
+	
+	@Override
+	public StellaType inferType(ExpressionContext context) throws StellaException {
+		StellaType fnRawType = fnExpr.inferType(context);
+		
+		if (fnRawType.getTypeTag() != StellaType.Tag.FUNCTION) {
+			if (fnRawType.getTypeTag() != StellaType.Tag.TYPE_VAR || !context.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION))
+				throw new StellaNotAFunctionException(fnRawType, fnExpr, this);
+			
+			return doTypeInferenceConstrainted(context);
+		}
+		
+		return doTypeInference(context);
+	}
 
 	@Override
 	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
 		StellaType fnRawType = fnExpr.inferType(context);
-		
-		if (fnRawType.getTypeTag() == StellaType.Tag.FUNCTION)
-			return doTypeInference(context);
 		
 		List<StellaType> argTypes = new ArrayList<>();
 		
@@ -91,12 +103,7 @@ public class ApplicationExpr extends StellaExpression {
 	
 	@Override
 	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
-		StellaType fnRawType = fnExpr.inferType(context);
-		
-		if (fnRawType.getTypeTag() != StellaType.Tag.FUNCTION)
-			throw new StellaNotAFunctionException(fnRawType, fnExpr, this);
-		
-		StellaFunctionType fnType = (StellaFunctionType) fnRawType;
+		StellaFunctionType fnType = (StellaFunctionType) fnExpr.inferType(context);
 		
 		if (fnType.getArity() != arguments.size())
 			throw new StellaIncorrectNumberOfArgumentsException(
@@ -114,7 +121,7 @@ public class ApplicationExpr extends StellaExpression {
 			arg.checkType(context, argsTypes.get(i));
 		}
 		
-		doTypeCheck(context, fnType.getReturnType());
+		doTypeCheckSimple(context, fnType.getReturnType());
 		
 		return fnType.getReturnType();
 	}

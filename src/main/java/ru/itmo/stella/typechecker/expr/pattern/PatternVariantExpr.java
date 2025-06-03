@@ -44,7 +44,7 @@ public class PatternVariantExpr extends PatternExpr {
 	}
 
 	@Override
-	public void doTypeCheck(ExpressionContext ctx, StellaType expected) throws StellaException {
+	public void doTypeCheckSimple(ExpressionContext ctx, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.VARIANT)
 			throw new StellaUnexpectedPatternForTypeException(this, expected);
 		
