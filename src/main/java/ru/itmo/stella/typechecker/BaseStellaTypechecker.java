@@ -2,12 +2,17 @@ package ru.itmo.stella.typechecker;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -20,6 +25,7 @@ import ru.itmo.stella.lang.Absyn.ARecordFieldType;
 import ru.itmo.stella.lang.Absyn.AVariantFieldType;
 import ru.itmo.stella.lang.Absyn.Decl;
 import ru.itmo.stella.lang.Absyn.DeclFun;
+import ru.itmo.stella.lang.Absyn.DeclFunGeneric;
 import ru.itmo.stella.lang.Absyn.NoReturnType;
 import ru.itmo.stella.lang.Absyn.NoTyping;
 import ru.itmo.stella.lang.Absyn.OptionalTyping;
@@ -46,15 +52,24 @@ import ru.itmo.stella.lang.Absyn.TypeUnit;
 import ru.itmo.stella.lang.Absyn.TypeVar;
 import ru.itmo.stella.lang.Absyn.TypeVariant;
 import ru.itmo.stella.lang.Absyn.VariantFieldType;
+import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
+import ru.itmo.stella.typechecker.exception.StellaOccursCheckInfiniteTypeException;
+import ru.itmo.stella.typechecker.exception.StellaUnexpectedTypeWhenUnifyingExpressionException;
 import ru.itmo.stella.typechecker.exception.function.StellaIncorrectArityOfMainException;
+import ru.itmo.stella.typechecker.exception.function.StellaIncorrectNumberOfArgumentsException;
 import ru.itmo.stella.typechecker.exception.function.StellaMissingMainException;
+import ru.itmo.stella.typechecker.exception.generic.StellaUndefinedTypeVariableException;
 import ru.itmo.stella.typechecker.exception.record.StellaDuplicateRecordTypeFieldsException;
+import ru.itmo.stella.typechecker.exception.record.StellaMissingRecordFieldsException;
+import ru.itmo.stella.typechecker.exception.record.StellaUnexpectedRecordFieldsException;
+import ru.itmo.stella.typechecker.exception.tuple.StellaUnexpectedTupleLengthException;
 import ru.itmo.stella.typechecker.exception.variant.StellaDuplicateVariantTypeFieldsException;
 import ru.itmo.stella.typechecker.expr.ExpressionContext;
 import ru.itmo.stella.typechecker.expr.StellaExpression;
 import ru.itmo.stella.typechecker.expr.visitor.StellaCoreExprVisitor;
 import ru.itmo.stella.typechecker.expr.visitor.StellaExprVisitor;
+import ru.itmo.stella.typechecker.type.StellaForAllType;
 import ru.itmo.stella.typechecker.type.StellaFunctionType;
 import ru.itmo.stella.typechecker.type.StellaListType;
 import ru.itmo.stella.typechecker.type.StellaRecordType;
@@ -62,16 +77,18 @@ import ru.itmo.stella.typechecker.type.StellaRefType;
 import ru.itmo.stella.typechecker.type.StellaSumType;
 import ru.itmo.stella.typechecker.type.StellaTupleType;
 import ru.itmo.stella.typechecker.type.StellaType;
+import ru.itmo.stella.typechecker.type.StellaType.Tag;
+import ru.itmo.stella.typechecker.type.StellaTypeVar;
 import ru.itmo.stella.typechecker.type.StellaVariantType;
+import ru.itmo.stella.typechecker.util.IntCounter;
 import ru.itmo.stella.typechecker.util.StellaOptional;
 
 public class BaseStellaTypechecker implements StellaTypechecker {
-	private ExpressionContext context = ExpressionContext.EMPTY_CONTEXT;
+	private ExpressionContext context;
 	private StellaExprVisitor exprVisitor;
-	private StellaParser parser;
 	
 	public BaseStellaTypechecker(StellaExprVisitor exprVisitor) {
-		this.context = ExpressionContext.EMPTY_CONTEXT;
+		this.context = new ExpressionContext(ExpressionContext.EMPTY_CONTEXT, new IntCounter(1));
 		this.exprVisitor = exprVisitor;
 	}
 	
@@ -81,7 +98,7 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 	
 	@Override
 	public List<StellaException> typecheckProgram(InputStream in) throws IOException {
-		parser = new StellaParser(
+		StellaParser parser = new StellaParser(
 					new CommonTokenStream(
 						new StellaLexer(CharStreams.fromStream(in))
 					)
@@ -91,6 +108,20 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 		Visitor visitor = new Visitor();
 		
 		parser.program().result.accept(visitor, errorRecords);
+		
+		Set<StellaConstraint> constraints = visitor.getConstraints();
+//		constraints.forEach(System.out::println);
+		
+		try {
+			Deque<StellaConstraint> sortedConstraints = new ArrayDeque<>();
+			sortedConstraints.addAll(constraints);
+			
+			Set<StellaConstraint> unifiedConstraints = unify(sortedConstraints);
+			
+			resolveUnifiedConstraints(unifiedConstraints);
+		} catch (StellaException e) {
+			errorRecords.add(e);
+		}
 		
 		postTypecheck(errorRecords);
 		
@@ -102,21 +133,260 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 		
 		if (mainFunctionType == null) {
 			errorRecords.add(
-					new StellaMissingMainException()
-				);
+				new StellaMissingMainException()
+			);
 			
 			return;
 		}
 		
 		if (mainFunctionType.getArity() != 1) {
 			errorRecords.add(
-					new StellaIncorrectArityOfMainException()
-				);
+				new StellaIncorrectArityOfMainException()
+			);
 		}
 	}
 	
+	private void resolveUnifiedConstraints(Set<StellaConstraint> constraints) throws StellaException {
+		for (StellaConstraint constraint: constraints) {
+			StellaType leftType = constraint.getLeftType();
+			StellaType rightType = constraint.getRightType();
+			
+			if (!leftType.equals(rightType)) {
+				throw new StellaUnexpectedTypeWhenUnifyingExpressionException(
+					constraint.getRelatedExpression(), 
+					rightType,
+					leftType
+				);
+			}
+		}
+	}
+	
+	private Collection<StellaConstraint> unifyConstraint(StellaConstraint constraint) throws StellaException {
+		Set<StellaConstraint> producedConstraints = new LinkedHashSet<>();
+		
+		StellaType leftType = constraint.getLeftType();
+		StellaType rightType = constraint.getRightType();
+		
+		if (leftType.getTypeTag() != rightType.getTypeTag())
+			throw new StellaUnexpectedTypeWhenUnifyingExpressionException(constraint.getRelatedExpression(), rightType, leftType);
+		
+		StellaExpression relatedExpr = constraint.getRelatedExpression();
+		
+		switch (leftType.getTypeTag()) {
+			case FUNCTION: {
+				StellaFunctionType leftFn = (StellaFunctionType) leftType;
+				StellaFunctionType rightFn = (StellaFunctionType) rightType;
+				
+				if (leftFn.getArity() != rightFn.getArity())
+					throw new StellaIncorrectNumberOfArgumentsException(rightFn, leftFn, constraint.getRelatedExpression());
+				
+				Iterator<StellaType> leftFnArgsIter = leftFn.getArgumensTypes().values().iterator();
+				Iterator<StellaType> rightFnArgsIter = rightFn.getArgumensTypes().values().iterator();
+				
+				while (leftFnArgsIter.hasNext() && rightFnArgsIter.hasNext()) {
+					StellaType leftArg = leftFnArgsIter.next();
+					StellaType rightArg = rightFnArgsIter.next();
+					
+					producedConstraints.add(
+						new StellaConstraint(
+							leftArg, 
+							rightArg, 
+							relatedExpr
+						)
+					);
+				}
+				
+				producedConstraints.add(
+					new StellaConstraint(
+						leftFn.getReturnType(), 
+						rightFn.getReturnType(),
+						relatedExpr
+					)
+				);
+				
+				break;
+			} case REF: {
+				producedConstraints.add(
+					new StellaConstraint(
+						((StellaRefType) leftType).getReferencedType(),
+						((StellaRefType) rightType).getReferencedType(),
+						relatedExpr
+					)
+				);
+				
+				break;
+			} case LIST: {
+				producedConstraints.add(
+					new StellaConstraint(
+						((StellaListType) leftType).getElementType(),
+						((StellaListType) rightType).getElementType(),
+						relatedExpr
+					)
+				);
+				
+				break;
+			} case SUM: {
+				StellaSumType leftSum = (StellaSumType) leftType;
+				StellaSumType rightSum = (StellaSumType) rightType;
+				
+				producedConstraints.addAll(
+					List.of(
+						new StellaConstraint(
+							leftSum.getLeftType(), 
+							rightSum.getLeftType(),
+							relatedExpr
+						),
+						new StellaConstraint(
+							leftSum.getRightType(), 
+							rightSum.getRightType(),
+							relatedExpr
+						)
+					)
+				);
+				
+				break;
+			} case TUPLE: {
+				StellaTupleType leftTuple = (StellaTupleType) leftType;
+				StellaTupleType rightTuple = (StellaTupleType) rightType;
+				
+				if (leftTuple.getFieldsCount() != rightTuple.getFieldsCount())
+					throw new StellaUnexpectedTupleLengthException(rightTuple, leftTuple, constraint.getRelatedExpression());
+				
+				for (int i = 0; i < leftTuple.getFieldsCount(); ++i) {
+					producedConstraints.add(
+						new StellaConstraint(
+							leftTuple.getFieldType(i),
+							rightTuple.getFieldType(i),
+							relatedExpr
+						)
+					);
+				}
+				
+				break;
+			} case RECORD: {
+				StellaRecordType leftRecord = (StellaRecordType) leftType;
+				StellaRecordType rightRecord = (StellaRecordType) rightType;
+				
+				List<String> unexpectedFields = new ArrayList<>();
+				
+				for (Map.Entry<String, StellaType> recordEntry: leftRecord.getFieldTypes().entrySet()) {
+					String fieldName = recordEntry.getKey();
+					StellaType fieldLeftType = recordEntry.getValue();
+					
+					StellaType fieldRightType = rightRecord.getFieldType(fieldName);
+					
+					if (fieldRightType == null)
+						unexpectedFields.add(fieldName);
+					else {
+						producedConstraints.add(
+							new StellaConstraint(
+								fieldLeftType,
+								fieldRightType,
+								relatedExpr
+							)
+						);
+					}
+				}
+				
+				if (unexpectedFields.isEmpty()) {
+					List<String> missingFields = rightRecord.getFieldTypes().keySet().stream().filter(Predicate.not(leftRecord::hasField)).toList();
+					
+					if (!missingFields.isEmpty())
+						throw new StellaMissingRecordFieldsException(missingFields, rightRecord, leftRecord, relatedExpr);
+				} else
+					throw new StellaUnexpectedRecordFieldsException(unexpectedFields, rightRecord, leftRecord, relatedExpr);
+				
+				break;
+			} default: {
+				producedConstraints.add(constraint);
+				
+				break;
+			}
+		}
+		
+		return producedConstraints;
+	}
+	
+	private Set<StellaConstraint> unify(Deque<StellaConstraint> constraints) throws StellaException {
+		if (constraints.isEmpty())
+			return Set.of();
+		
+		Set<StellaConstraint> unfiedConstraints = new LinkedHashSet<>(); 
+		StellaConstraint constraint = constraints.poll();
+		
+//		System.out.println("DEBUG unify: " + constraint);
+		
+		StellaType leftType = constraint.getLeftType();
+		StellaType rightType = constraint.getRightType();
+		
+		if (leftType.getTypeTag() == Tag.TYPE_VAR || rightType.getTypeTag() == Tag.TYPE_VAR) {
+			Deque<StellaConstraint> subconstraints = new ArrayDeque<>();
+			
+			StellaType replaceType, replacementType;
+			Set<StellaTypeVar> typeVariables;
+			
+			if (leftType.getTypeTag() == Tag.TYPE_VAR && rightType.getTypeTag() == Tag.TYPE_VAR) {
+				StellaTypeVar leftTypeVar = (StellaTypeVar) leftType;
+				StellaTypeVar rightTypeVar = (StellaTypeVar) rightType;
+				
+				if (leftTypeVar.getVarName().compareToIgnoreCase(rightTypeVar.getVarName()) >= 0) {
+					replaceType = leftType;
+					replacementType = rightType;
+					
+					typeVariables = constraint.getRightTypeVariables();
+				} else {
+					replaceType = rightType;
+					replacementType = leftType;
+					
+					typeVariables = constraint.getLeftTypeVariables();
+				}
+			} else if (leftType.getTypeTag() == Tag.TYPE_VAR) {
+				replaceType = leftType;
+				replacementType = rightType;
+				
+				typeVariables = constraint.getRightTypeVariables();
+			} else /* if (rightType.getTypeTag() == Tag.TYPE_VAR) */ {
+				replaceType = rightType;
+				replacementType = leftType;
+				
+				typeVariables = constraint.getLeftTypeVariables();
+			}
+			
+			if (typeVariables.contains(replaceType) && !replaceType.equalsStrict(replacementType))
+				throw new StellaOccursCheckInfiniteTypeException(replaceType, replacementType, constraint.getRelatedExpression());
+			
+			for (StellaConstraint c: constraints) {
+				StellaConstraint subconstraint = new StellaConstraint(
+						c.getLeftType().replaceType(replaceType, replacementType),
+						c.getRightType().replaceType(replaceType, replacementType),
+						c.getRelatedExpression()
+					);
+				
+				subconstraints.add(subconstraint);
+			}
+			
+			constraints = subconstraints;
+		} else if (leftType.getTypeTag() == Tag.PRIMITIVE && rightType.getTypeTag() == Tag.PRIMITIVE) {
+			if (leftType.equals(rightType))
+				unfiedConstraints.add(constraint);
+			else
+				throw new StellaUnexpectedTypeWhenUnifyingExpressionException(constraint.getRelatedExpression(), rightType, leftType);
+		} else
+			unifyConstraint(constraint).forEach(constraints::addFirst);
+		
+		unfiedConstraints.addAll(unify(constraints));
+		
+		return unfiedConstraints;
+	}
+	
 	public class Visitor extends ComposVisitor<List<StellaException>> {
+		private Set<StellaConstraint> constraints; 
+		
 		private StellaTypeVisitor typeVisitor = new StellaTypeVisitor();
+		
+		public Set<StellaConstraint> getConstraints() {
+			return constraints;
+		}
 		
 		@Override
 		public ru.itmo.stella.lang.Absyn.Extension visit(ru.itmo.stella.lang.Absyn.AnExtension p, List<StellaException> errorsList) {			
@@ -139,13 +409,21 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 		}
 		
 		@Override
-		public ru.itmo.stella.lang.Absyn.Decl visit(ru.itmo.stella.lang.Absyn.DeclFun p, List<StellaException> errorsList) {
+		public ru.itmo.stella.lang.Absyn.Decl visit(ru.itmo.stella.lang.Absyn.DeclFunGeneric p, List<StellaException> errorsList) {
 			String fnName = p.stellaident_;
 			
+			List<StellaTypeVar> typeVars = p.liststellaident_.stream().map(StellaTypeVar::new).toList();
+			
 			try {
-				StellaFunctionType fnStellaType = parseFuncDecl(p).get();
+				ExpressionContext subctx = new ExpressionContext(context);
+				typeVars.forEach(subctx::addTypeVariable);
 				
-				ExpressionContext subctx = new ExpressionContext(context, fnStellaType.getArgumensTypes());
+				StellaFunctionType fnType = parseGenericFuncDecl(p, subctx).get();
+				
+				StellaType genericFnType = new StellaForAllType(typeVars, fnType);
+				
+				fnType.getArgumensTypes().forEach((argName, argType) -> subctx.add(argName, argType));
+				subctx.add(fnName, genericFnType);
 				
 				ExpressionContext oldContext = context;
 				context = subctx;
@@ -159,6 +437,75 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 							
 							StellaFunctionType nestedFnStellaType = parseFuncDecl(nestedDeclFun).get();
 							subctx.add(nestedFnName, nestedFnStellaType);
+						} else if (decl instanceof DeclFunGeneric nestedDeclFunGeneric) { 
+							String nestedFnName = nestedDeclFunGeneric.stellaident_;
+							List<StellaTypeVar> typeVariables = nestedDeclFunGeneric.liststellaident_.stream().map(StellaTypeVar::new).toList();
+							
+							nestedDeclFunGeneric.accept(this, errorsList);
+							
+							ExpressionContext genericFnSubctx = new ExpressionContext(subctx);
+							typeVariables.forEach(genericFnSubctx::addTypeVariable);
+							
+							StellaFunctionType nestedFnStellaType = parseGenericFuncDecl(nestedDeclFunGeneric, genericFnSubctx).get();
+							StellaType genericNestedFnType = new StellaForAllType(typeVariables, nestedFnStellaType);
+							
+							subctx.add(nestedFnName, genericNestedFnType);
+						}
+					}
+					
+					StellaExpression fnBody = p.expr_.accept(
+							exprVisitor,
+							new TypecheckContext(errorsList, subctx)
+						).get();
+					fnBody.checkType(subctx, fnType.getReturnType());
+				} catch (StellaException e) {
+					errorsList.add(e);
+				}
+				
+				oldContext.addConstraints(context.getConstraints());
+				context = oldContext;
+			} catch (StellaException e) {
+				errorsList.add(e);
+			}
+			
+			return super.visit(p, errorsList);
+		}
+		
+		@Override
+		public ru.itmo.stella.lang.Absyn.Decl visit(ru.itmo.stella.lang.Absyn.DeclFun p, List<StellaException> errorsList) {
+			String fnName = p.stellaident_;
+			
+			try {
+				StellaFunctionType fnStellaType = parseFuncDecl(p).get();
+				context.add(fnName, fnStellaType);
+				
+				ExpressionContext subctx = new ExpressionContext(context, fnStellaType.getArgumensTypes(), context.getTypeVarCounter());
+				
+				ExpressionContext oldContext = context;
+				context = subctx;
+				
+				try {
+					for (Decl decl: p.listdecl_) {
+						if (decl instanceof DeclFun nestedDeclFun) {
+							String nestedFnName = nestedDeclFun.stellaident_;
+							
+							nestedDeclFun.accept(this, errorsList);
+							
+							StellaFunctionType nestedFnStellaType = parseFuncDecl(nestedDeclFun).get();
+							subctx.add(nestedFnName, nestedFnStellaType);
+						} else if (decl instanceof DeclFunGeneric nestedDeclFunGeneric) {
+							String nestedFnName = nestedDeclFunGeneric.stellaident_;
+							List<StellaTypeVar> typeVariables = nestedDeclFunGeneric.liststellaident_.stream().map(StellaTypeVar::new).toList();
+							
+							nestedDeclFunGeneric.accept(this, errorsList);
+							
+							ExpressionContext genericFnSubctx = new ExpressionContext(subctx);
+							typeVariables.forEach(genericFnSubctx::addTypeVariable);
+							
+							StellaFunctionType nestedFnStellaType = parseGenericFuncDecl(nestedDeclFunGeneric, genericFnSubctx).get();
+							StellaType genericNestedFnType = new StellaForAllType(typeVariables, nestedFnStellaType);
+							
+							subctx.add(nestedFnName, genericNestedFnType);
 						}
 					}
 					
@@ -172,15 +519,15 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 					errorsList.add(e);
 				}
 				
+				oldContext.addConstraints(context.getConstraints());
 				context = oldContext;
-				context.add(fnName, fnStellaType);
 			} catch (StellaException e) {
 				errorsList.add(e);
 			}
+
+			constraints = context.getConstraints();
 			
 			return null;
-			
-//			return super.visit(p, errorsList);
 		}
 		
 		protected StellaOptional<StellaFunctionType> parseFuncDecl(ru.itmo.stella.lang.Absyn.DeclFun p) {
@@ -203,6 +550,27 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 				return StellaOptional.of(StellaFunctionType.class, e);
 			}
 		}
+		
+		protected StellaOptional<StellaFunctionType> parseGenericFuncDecl(ru.itmo.stella.lang.Absyn.DeclFunGeneric p, ExpressionContext ctx) {
+			Map<String, StellaType> funArgs = new LinkedHashMap<>();
+			
+			try {
+				for (ParamDecl paramDecl: p.listparamdecl_) {
+					AParamDecl param = (AParamDecl) paramDecl;
+					
+					funArgs.put(
+							param.stellaident_,
+							param.type_.accept(typeVisitor, ctx).get()
+						);
+				}
+				
+				StellaType retType = p.returntype_.accept(typeVisitor, ctx).get();
+				
+				return StellaOptional.of(new StellaFunctionType(funArgs, retType));
+			} catch (StellaException e) {
+				return StellaOptional.of(StellaFunctionType.class, e);
+			}
+		}
 	}
 	
 	public static class StellaTypeVisitor implements 
@@ -212,7 +580,7 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 		
 		@Override
 		public StellaOptional<StellaType> visit(TypeAuto p, ExpressionContext ctx) {
-			return null;
+			return StellaOptional.of(ctx.newAutoTypeVar());
 		}
 
 		@Override
@@ -233,7 +601,18 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 
 		@Override
 		public StellaOptional<StellaType> visit(TypeForAll p, ExpressionContext ctx) {
-			return null;
+			try {
+				List<StellaTypeVar> typeVars = p.liststellaident_.stream().map(StellaTypeVar::new).toList();
+				
+				ExpressionContext subctx = new ExpressionContext(ctx);
+				typeVars.forEach(subctx::addTypeVariable);
+				
+				StellaType innerType = p.type_.accept(this, subctx).get();
+				
+				return StellaOptional.of(new StellaForAllType(typeVars, innerType));
+			} catch (StellaException e) {
+				return StellaOptional.of(StellaForAllType.class, e);
+			}
 		}
 
 		@Override
@@ -395,12 +774,19 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 
 		@Override
 		public StellaOptional<StellaType> visit(TypeVar p, ExpressionContext ctx) {
-			return null;
+			String typeVarName = p.stellaident_;
+			
+			if (ctx.hasTypeVariable(typeVarName))
+				return StellaOptional.of(new StellaTypeVar(p.stellaident_));
+			else
+				return StellaOptional.of(
+							StellaTypeVar.class, 
+							new StellaUndefinedTypeVariableException(typeVarName)
+						);
 		}
 
 		@Override
 		public StellaOptional<StellaType> visit(NoReturnType p, ExpressionContext ctx) {
-//			return ThrowingOptional.of(StellaType.Primitives.UNIT);
 			return null;
 		}
 

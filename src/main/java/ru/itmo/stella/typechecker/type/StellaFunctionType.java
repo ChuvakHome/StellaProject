@@ -3,6 +3,7 @@ package ru.itmo.stella.typechecker.type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,7 +21,8 @@ public final class StellaFunctionType extends StellaType.StellaComplexType {
 		super(StellaType.Tag.FUNCTION);
 		
 		this.arity = argsTypes.values().size();
-		this.argsTypes = Collections.unmodifiableMap(argsTypes);
+//		this.argsTypes = Collections.unmodifiableMap(argsTypes);
+		this.argsTypes = new HashMap<>(argsTypes);
 		this.returnType = returnType;
 	}
 	
@@ -46,6 +48,21 @@ public final class StellaFunctionType extends StellaType.StellaComplexType {
 	
 	public StellaType getReturnType() {
 		return returnType;
+	}
+	
+	@Override
+	public StellaType replaceType(StellaType replace, StellaType replacement) {
+		for (Map.Entry<String, StellaType> argEntry: argsTypes.entrySet()) {
+			StellaType argType = argEntry.getValue();
+			
+			argEntry.setValue(
+				argType.replaceType(replace, replacement)
+			);
+		}
+		
+		returnType = returnType.replaceType(replace, replacement);
+		
+		return this;
 	}
 	
 	@Override

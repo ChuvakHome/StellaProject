@@ -21,12 +21,12 @@ public class PatternUnitExpr extends PatternExpr {
 	}
 
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		checkTypesEquality(expected, StellaType.Primitives.UNIT);
 	}
 	
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	public StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		return StellaType.Primitives.UNIT;
 	}
 	

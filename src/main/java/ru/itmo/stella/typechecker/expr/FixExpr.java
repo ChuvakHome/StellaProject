@@ -1,7 +1,8 @@
 package ru.itmo.stella.typechecker.expr;
 
-import java.util.Arrays;
+import java.util.List;
 
+import ru.itmo.stella.typechecker.StellaLanguageExtension;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.function.StellaNotAFunctionException;
 import ru.itmo.stella.typechecker.type.StellaFunctionType;
@@ -17,35 +18,70 @@ public class FixExpr extends StellaExpression {
 	public StellaExpression getArgument() {
 		return arg;
 	}
-
+	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
-		StellaType argType = arg.inferType(context);
-		
-		if (argType.getTypeTag() != StellaType.Tag.FUNCTION)
-			throw new StellaNotAFunctionException(argType, arg, this);
+	protected void doTypeCheckConstrainted(ExpressionContext context, StellaType expected) throws StellaException {
+		StellaType retType = expected;
 		
 		StellaFunctionType fixRequiredArgType = new StellaFunctionType(
-					Arrays.asList(expected), 
-					expected
+					List.of(retType), 
+					retType
 				);
 		
 		arg.checkType(context, fixRequiredArgType);
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		StellaType argType = arg.inferType(context);
 		
 		if (argType.getTypeTag() != StellaType.Tag.FUNCTION)
 			throw new StellaNotAFunctionException(argType, arg, this);
 		
-		StellaFunctionType argFnType = (StellaFunctionType) argType;
+		StellaFunctionType fixRequiredArgType = new StellaFunctionType(
+					List.of(expected), 
+					expected
+				);
+		
+		arg.checkType(context, fixRequiredArgType);
+	}
+	
+	@Override
+	public StellaType inferType(ExpressionContext context) throws StellaException {
+		StellaType argType = arg.inferType(context);
+		
+		if (argType.getTypeTag() != StellaType.Tag.FUNCTION) {
+			if (argType.getTypeTag() != StellaType.Tag.TYPE_VAR || !context.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION))
+				throw new StellaNotAFunctionException(argType, arg, this);
+			
+			return doTypeInferenceConstrainted(context);
+		}
+		
+		return doTypeInference(context);
+	}
+
+	@Override
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
+		StellaFunctionType argFnType = (StellaFunctionType) arg.inferType(context);
 		
 		StellaType retType = argFnType.getReturnType();
 		
 		StellaFunctionType fixRequiredArgType = new StellaFunctionType(
-					Arrays.asList(retType), 
+					List.of(retType), 
+					retType
+				);
+		
+		arg.checkType(context, fixRequiredArgType);
+		
+		return retType;
+	}
+	
+	@Override
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
+		StellaType retType = getCachedType(context);
+		
+		StellaFunctionType fixRequiredArgType = new StellaFunctionType(
+					List.of(retType), 
 					retType
 				);
 		

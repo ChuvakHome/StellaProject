@@ -26,7 +26,15 @@ public class ListExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected StellaListType getCachedType(ExpressionContext context) {
+		if (cachedInferedType == null)
+			cachedInferedType = new StellaListType(context.newAutoTypeVar());
+		
+		return (StellaListType) cachedInferedType;
+	}
+	
+	@Override
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.LIST)
 			throw new StellaUnexpectedListException(expected, this);
 		
@@ -41,7 +49,7 @@ public class ListExpr extends StellaExpression {
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		if (elements.isEmpty()) {
 			if (context.isExtensionUsed(StellaLanguageExtension.AMBIGUOUS_TYPE_AS_BOTTOM))
 				return new StellaListType(StellaType.BOTTOM);
@@ -55,6 +63,20 @@ public class ListExpr extends StellaExpression {
 		for (int i = 1; i < elements.size(); ++i)
 			elements.get(i).checkType(context, headType);
 			
+		return new StellaListType(headType);
+	}
+	
+	@Override
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
+		if (elements.isEmpty())
+			return getCachedType(context);
+		
+		StellaExpression head = elements.get(0);
+		StellaType headType = head.inferType(context);
+		
+		for (int i = 1; i < elements.size(); ++i)
+			elements.get(i).checkType(context, headType);
+		
 		return new StellaListType(headType);
 	}
 

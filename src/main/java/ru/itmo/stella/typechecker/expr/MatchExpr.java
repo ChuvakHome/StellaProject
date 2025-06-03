@@ -52,9 +52,9 @@ public class MatchExpr extends StellaExpression {
 		
 		return patternExpressionType;
 	}
-
+	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		if (matchCases.isEmpty())
 			throw new StellaIllegalEmptyMatchingException(this);
 		
@@ -64,7 +64,7 @@ public class MatchExpr extends StellaExpression {
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		if (matchCases.isEmpty())
 			throw new StellaIllegalEmptyMatchingException(this);
 		
@@ -72,13 +72,37 @@ public class MatchExpr extends StellaExpression {
 		
 		return checkPatterns(context, matchExprType, null);
 	}
+	
+	@Override
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
+		if (matchCases.isEmpty())
+			throw new StellaIllegalEmptyMatchingException(this);
+		
+		StellaType resultType = getCachedType(context);
+		StellaType matchExprType = matchExpr.inferType(context);
+		
+		for (PatternMatchCase matchCase: matchCases) {
+			PatternExpr matchPattern = matchCase.getPattern();
+			StellaExpression matchResult = matchCase.getExpression();
+			
+			matchPattern.checkType(context, matchExprType);
+			
+			ExpressionContext subctx = matchPattern.extendContext(context, matchExprType);
+			
+			matchResult.checkType(subctx, resultType);
+			
+			context.addConstraints(subctx.getConstraints());
+		}
+		
+		return resultType;
+	}
 
 	@Override
 	public String toString() {
 		return String.format(
-					"match %s\n{%s\n}",
+					"match %s\n{\n  %s\n}",
 					matchExpr,
-					String.join("\n|", matchCases.stream().map(PatternMatchCase::toString).toList())
+					String.join(" | ", matchCases.stream().map(PatternMatchCase::toString).toList())
 				);
 	}
 }

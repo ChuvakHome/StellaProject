@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 
+import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.pattern.StellaAmbiguousPatternTypeException;
 import ru.itmo.stella.typechecker.exception.pattern.StellaDuplicatePatternVariableException;
@@ -63,7 +64,7 @@ public class PatternTupleExpr extends PatternExpr {
 	}
 
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.TUPLE)
 			throw new StellaUnexpectedPatternForTypeException(this, expected);
 		
@@ -77,15 +78,31 @@ public class PatternTupleExpr extends PatternExpr {
 	
 	// TODO: Check type inference in master solution!
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	public StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		throw new StellaAmbiguousPatternTypeException(this);
 	}
 
 	@Override
 	public ExpressionContext extendContext(ExpressionContext context, StellaType expected) throws StellaException {
-		StellaTupleType expecteTupleType = (StellaTupleType) expected;
+		StellaTupleType expecteTupleType;
 		
-		ExpressionContext emptyCtx = new ExpressionContext();
+		if (expected.getTypeTag() == StellaType.Tag.TYPE_VAR) {
+			List<StellaType> componentTypes = new ArrayList<>(patterns.size());
+			
+			for (PatternExpr p: patterns)
+				componentTypes.add(p.inferType(context));
+			
+			expecteTupleType = new StellaTupleType(componentTypes);
+			
+			context.addConstraint(
+						new StellaConstraint(expected, expecteTupleType, this)
+					);
+		} else if (expected.getTypeTag() == StellaType.Tag.TUPLE)
+			expecteTupleType = (StellaTupleType) expected;
+		else
+			throw new StellaUnexpectedPatternForTypeException(this, expected);
+		
+		ExpressionContext emptyCtx = new ExpressionContext(context.getTypeVarCounter());
 		ExpressionContext subctx = new ExpressionContext(context, new LinkedHashMap<>());
 		
 		Iterator<PatternExpr> patternIter = patterns.iterator();

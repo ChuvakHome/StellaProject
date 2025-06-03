@@ -36,6 +36,13 @@ public class StellaTupleType extends StellaComplexType {
 		return fieldTypes.get(i);
 	}
 	
+	@Override
+	public StellaType replaceType(StellaType replace, StellaType replacement) {
+		fieldTypes = fieldTypes.stream().map(t -> t.replaceType(replace, replacement)).toList();
+		
+		return this;
+	}
+	
 	private List<? extends PatternExpr> checkPatternsExhaustivenessSingle(Collection<? extends PatternExpr> patterns) throws StellaException {
 		Collection<PatternExpr> firstComponentPatterns = patterns.stream()
 				.map(p -> ((PatternTupleExpr) p).getPattern(0))

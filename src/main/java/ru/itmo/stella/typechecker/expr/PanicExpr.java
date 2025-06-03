@@ -7,21 +7,21 @@ import ru.itmo.stella.typechecker.type.StellaType;
 
 public class PanicExpr extends StellaExpression {
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
-		
-	}
-	
-	@Override
-	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		if (context.isExtensionUsed(StellaLanguageExtension.AMBIGUOUS_TYPE_AS_BOTTOM))
 			return StellaType.BOTTOM;
 		
 		throw new StellaAmbiguousPanicTypeException();
+	}
+	
+	@Override
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
+		return getCachedType(context);
 	}
 
 	@Override

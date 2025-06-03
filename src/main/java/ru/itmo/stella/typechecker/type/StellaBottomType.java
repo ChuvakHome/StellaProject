@@ -18,8 +18,18 @@ public class StellaBottomType extends StellaType {
 	}
 	
 	@Override
-	public boolean equals(Object o) {
-		return o == this;
+	public StellaType replaceType(StellaType replace, StellaType replacement) {
+		return this;
+	}
+	
+	@Override
+	public boolean equalsWeak(StellaType stellaType) {
+		return equalsFast(stellaType) || stellaType == this;
+	}
+	
+	@Override
+	public boolean equalsStrict(StellaType stellaType) {
+		return stellaType == this;
 	}
 	
 	@Override

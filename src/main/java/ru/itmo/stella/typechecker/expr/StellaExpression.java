@@ -6,9 +6,11 @@ import java.util.Map.Entry;
 import java.util.function.Predicate;
 
 import ru.itmo.stella.typechecker.StellaLanguageExtension;
+import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.StellaUnexpectedSubtypeException;
 import ru.itmo.stella.typechecker.exception.StellaUnexpectedTypeForExpressionException;
+import ru.itmo.stella.typechecker.exception.StellaUnexpectedTypeWhenUnifyingExpressionException;
 import ru.itmo.stella.typechecker.exception.function.StellaIncorrectNumberOfArgumentsException;
 import ru.itmo.stella.typechecker.exception.record.StellaMissingRecordFieldsException;
 import ru.itmo.stella.typechecker.exception.tuple.StellaUnexpectedTupleLengthException;
@@ -23,7 +25,33 @@ import ru.itmo.stella.typechecker.type.StellaType;
 import ru.itmo.stella.typechecker.type.StellaVariantType;
 
 public abstract class StellaExpression {
-	protected abstract void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException;
+	protected StellaType cachedInferedType = null;
+	
+	protected StellaType getCachedType(ExpressionContext context) {
+		if (cachedInferedType == null)
+			cachedInferedType = context.newAutoTypeVar();
+		
+		return cachedInferedType;
+	}
+	
+	protected abstract void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException;
+	
+	protected void doTypeCheckConstrainted(ExpressionContext context, StellaType expected) throws StellaException {
+		context.addConstraint(
+			new StellaConstraint(
+				inferType(context),
+				expected,
+				this
+			)
+		);
+	}
+	
+	protected void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+		if (context.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION))
+			doTypeCheckConstrainted(context, expected);
+		else
+			doTypeCheckSimple(context, expected);
+	}
 	
 	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected == StellaType.TOP)
@@ -32,7 +60,27 @@ public abstract class StellaExpression {
 			doTypeCheck(context, expected);
 	}
 	
-	public abstract StellaType inferType(ExpressionContext context) throws StellaException;
+	protected abstract StellaType doTypeInference(ExpressionContext context) throws StellaException;
+	
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
+		return doTypeInference(context);
+	}
+	
+	public StellaType inferType(ExpressionContext context) throws StellaException {
+		return context.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION)
+				? doTypeInferenceConstrainted(context)
+				: doTypeInference(context)
+				;
+	}
+	
+	private static void throwUnexpectedTypeException(ExpressionContext ctx, StellaExpression expr, StellaType expected, StellaType actual) throws StellaException {
+		if (ctx.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION))
+			throw new StellaUnexpectedTypeWhenUnifyingExpressionException(expr, expected, actual);
+		else
+			throw new StellaUnexpectedTypeForExpressionException(expr, expected, actual);
+	}
+	
+//	private 
 	
 	protected void checkTypeMatching(ExpressionContext ctx, StellaType expected, StellaType actual) throws StellaException {
 //		if (ctx.isExtensionUsed(StellaLanguageExtension.STRUCTUAL_SUBTYPING)) {
@@ -41,7 +89,7 @@ public abstract class StellaExpression {
 //		} else if (!actual.equals(expected))
 //			throw new StellaUnexpectedTypeForExpressionException(this, expected, actual);
 		
-		if (!actual.equals(expected)) {
+//		if (!actual.equals(expected)) {
 			if (expected.getTypeTag() != actual.getTypeTag()) {
 				checkTypesSimple(ctx, expected, actual);
 			} else {
@@ -71,15 +119,32 @@ public abstract class StellaExpression {
 						checkTypesSimple(ctx, expected, actual);
 				}
 			}
-		}
+//		}
 	}
 	
 	private void checkTypesSimple(ExpressionContext ctx, StellaType expected, StellaType actual) throws StellaException {
 		if (ctx.isExtensionUsed(StellaLanguageExtension.STRUCTUAL_SUBTYPING)) {
 			if (!actual.isSubtype(expected))
 				throw new StellaUnexpectedSubtypeException(this, expected, actual);
-		} else if (!actual.equals(expected))
-			throw new StellaUnexpectedTypeForExpressionException(this, expected, actual);
+		} else {
+//			StellaType.Tag expectedTypeTag = expected.getTypeTag();
+//			StellaType.Tag actualTypeTag = actual.getTypeTag();
+//			
+//			if (ctx.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION)) {
+//				if (expectedTypeTag == Tag.TYPE_VAR && actualTypeTag != Tag.TYPE_VAR)
+//					return;
+//				else if (actualTypeTag == Tag.TYPE_VAR && expectedTypeTag != Tag.TYPE_VAR)
+//					return;
+//			}
+			
+			boolean eq = ctx.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION)
+							? actual.equalsWeak(expected)
+							: actual.equalsStrict(expected)
+							;
+			
+			if (!eq)
+				throwUnexpectedTypeException(ctx, this, expected, actual);
+		}
 	}
 	
 	private void checkTypesEqualitySpecialized(ExpressionContext ctx, StellaRefType expected, StellaRefType actual) throws StellaException {
@@ -123,7 +188,7 @@ public abstract class StellaExpression {
 			if (ctx.isExtensionUsed(StellaLanguageExtension.STRUCTUAL_SUBTYPING))
 				throw new StellaMissingRecordFieldsException(missingFields, expected, actual, this);
 			else
-				throw new StellaUnexpectedTypeForExpressionException(this, expected, actual);
+				throwUnexpectedTypeException(ctx, this, expected, actual);
 		}
 	}
 	
@@ -151,7 +216,7 @@ public abstract class StellaExpression {
 			if (ctx.isExtensionUsed(StellaLanguageExtension.STRUCTUAL_SUBTYPING))
 				throw new StellaUnexpectedVariantLabelException(unexpectedLabels, expected, actual, this);
 			else
-				throw new StellaUnexpectedTypeForExpressionException(this, expected, actual);
+				throwUnexpectedTypeException(ctx, this, expected, actual);
 		}
 	}
 	
@@ -160,7 +225,7 @@ public abstract class StellaExpression {
 			if (ctx.isExtensionUsed(StellaLanguageExtension.STRUCTUAL_SUBTYPING))
 				throw new StellaIncorrectNumberOfArgumentsException(expected, actual, this);
 			else
-				throw new StellaUnexpectedTypeForExpressionException(this, expected, actual);
+				throwUnexpectedTypeException(ctx, this, expected, actual);
 		}
 		
 		Iterator<StellaType> it1 = expected.getArgumensTypesList().iterator();

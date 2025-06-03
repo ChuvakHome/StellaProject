@@ -2,12 +2,14 @@ package ru.itmo.stella.typechecker.expr.pattern;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.pattern.StellaAmbiguousPatternTypeException;
 import ru.itmo.stella.typechecker.exception.pattern.StellaDuplicatePatternVariableException;
@@ -73,7 +75,7 @@ public class PatternRecordExpr extends PatternExpr {
 	}
 
 	@Override
-	public void checkType(ExpressionContext context, StellaType expected) throws StellaException {
+	public void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.RECORD)
 			throw new StellaUnexpectedPatternForTypeException(this, expected);
 		
@@ -90,18 +92,40 @@ public class PatternRecordExpr extends PatternExpr {
 	
 	// TODO: Check type inference in master solution!
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	public StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		throw new StellaAmbiguousPatternTypeException(this);
 	}
 
 	@Override
 	public ExpressionContext extendContext(ExpressionContext context, StellaType expected) throws StellaException {
-		StellaRecordType expecteRecordType = (StellaRecordType) expected;
+		StellaRecordType expectedRecordType;
 		
-		ExpressionContext emptyCtx = new ExpressionContext();
+		if (expected.getTypeTag() == StellaType.Tag.TYPE_VAR) {
+			Map<String, StellaType> recordComponents = new HashMap<>();
+			
+			for (Map.Entry<String, PatternExpr> patternEntry: patterns.entrySet()) {
+				String fieldName = patternEntry.getKey();
+				PatternExpr fieldPattern = patternEntry.getValue();
+				
+				StellaType fieldType = fieldPattern.inferType(context);
+				
+				recordComponents.put(fieldName, fieldType);
+			}
+			
+			expectedRecordType = new StellaRecordType(recordComponents);
+			
+			context.addConstraint(
+						new StellaConstraint(expected, expectedRecordType, this)
+					);
+		} else if (expected.getTypeTag() == StellaType.Tag.RECORD)
+			expectedRecordType = (StellaRecordType) expected;
+		else
+			throw new StellaUnexpectedPatternForTypeException(this, expected);
+		
+		ExpressionContext emptyCtx = new ExpressionContext(context.getTypeVarCounter());
 		ExpressionContext subctx = new ExpressionContext(context, new LinkedHashMap<>());
 		
-		for (Entry<String, StellaType> recordFieldEntry: expecteRecordType.getFieldTypes().entrySet()) {
+		for (Entry<String, StellaType> recordFieldEntry: expectedRecordType.getFieldTypes().entrySet()) {
 			String recordFieldName = recordFieldEntry.getKey();
 			PatternExpr pattern = patterns.get(recordFieldName);
 			

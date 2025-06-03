@@ -3,6 +3,7 @@ package ru.itmo.stella.typechecker.expr.pattern;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 
+import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.exception.pattern.StellaAmbiguousPatternTypeException;
 import ru.itmo.stella.typechecker.exception.pattern.StellaDuplicatePatternVariableException;
@@ -40,9 +41,9 @@ public class PatternConsExpr extends PatternExpr {
 		
 		return consPattern.headPattern.equals(headPattern) && consPattern.tailPattern.equals(tailPattern); 
 	}
-
+	
 	@Override
-	public void checkType(ExpressionContext ctx, StellaType expected) throws StellaException {
+	public void doTypeCheckSimple(ExpressionContext ctx, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.LIST)
 			throw new StellaUnexpectedPatternForTypeException(this, expected);
 		
@@ -53,7 +54,7 @@ public class PatternConsExpr extends PatternExpr {
 	}
 	
 	private void extendContext0(ExpressionContext subctx, PatternExpr pattern, StellaType expected) throws StellaException {
-		ExpressionContext emptyCtx = new ExpressionContext();
+		ExpressionContext emptyCtx = new ExpressionContext(subctx.getTypeVarCounter());
 		ExpressionContext emptySubctx = new ExpressionContext(emptyCtx, new LinkedHashMap<>());
 		
 		ExpressionContext extendedCtx = pattern.extendContext(emptySubctx, expected);
@@ -68,13 +69,35 @@ public class PatternConsExpr extends PatternExpr {
 	
 	// TODO: Check type inference in master solution!
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	public StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		throw new StellaAmbiguousPatternTypeException(this);
+	}
+	
+	@Override
+	public StellaType doTypeInferenceConstrainted(ExpressionContext ctx) throws StellaException {
+		StellaType headType = headPattern.inferType(ctx);
+		
+		StellaListType listType = new StellaListType(headType);
+		
+		tailPattern.checkType(ctx, listType);
+		
+		return listType;
 	}
 
 	@Override
 	public ExpressionContext extendContext(ExpressionContext ctx, StellaType expected) throws StellaException {
-		StellaListType expectedListType = (StellaListType) expected;
+		StellaListType expectedListType;
+		
+		if (expected.getTypeTag() == StellaType.Tag.TYPE_VAR) {
+			expectedListType = new StellaListType(ctx.newAutoTypeVar());
+			
+			ctx.addConstraint(
+						new StellaConstraint(expected, expectedListType, this)
+					);
+		} else if (expected.getTypeTag() == StellaType.Tag.LIST)
+			expectedListType = (StellaListType) expected;
+		else
+			throw new StellaUnexpectedPatternForTypeException(this, expected);
 		
 		ExpressionContext subctx = new ExpressionContext(ctx, new LinkedHashMap<>());
 		

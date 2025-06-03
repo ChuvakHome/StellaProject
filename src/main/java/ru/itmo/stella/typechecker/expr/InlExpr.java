@@ -19,7 +19,7 @@ public class InlExpr extends StellaExpression {
 	}
 
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		if (expected.getTypeTag() != StellaType.Tag.SUM)
 			throw new StellaUnexpectedInjectionException(expected, arg);
 		
@@ -29,7 +29,7 @@ public class InlExpr extends StellaExpression {
 	}
 
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {
 		if (!context.isExtensionUsed(StellaLanguageExtension.AMBIGUOUS_TYPE_AS_BOTTOM))
 			throw new StellaAmbiguousSumTypeException();
 		
@@ -38,6 +38,13 @@ public class InlExpr extends StellaExpression {
 		return new StellaSumType(leftType, StellaType.BOTTOM);
 	}
 
+	@Override
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {
+		StellaType leftType = arg.inferType(context);
+		
+		return new StellaSumType(leftType, getCachedType(context));
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("inl(%s)", arg);

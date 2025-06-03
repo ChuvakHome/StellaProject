@@ -38,7 +38,7 @@ public class LetRecExpr extends StellaExpression {
 			PatternExpr casePattern = matchCase.getPattern();
 			StellaExpression caseExpr = matchCase.getExpression();
 			
-			ExpressionContext tmpCtx = new ExpressionContext();
+			ExpressionContext tmpCtx = new ExpressionContext(context.getTypeVarCounter());
 			
 			StellaType casePatternType = casePattern.inferType(subctx);
 			
@@ -62,17 +62,28 @@ public class LetRecExpr extends StellaExpression {
 	}
 	
 	@Override
-	public void doTypeCheck(ExpressionContext context, StellaType expected) throws StellaException {
+	protected void doTypeCheckSimple(ExpressionContext context, StellaType expected) throws StellaException {
 		ExpressionContext subctx = createExtendedContext(context);
 		
 		expression.checkType(subctx, expected);
 	}
 	
 	@Override
-	public StellaType inferType(ExpressionContext context) throws StellaException {
+	protected StellaType doTypeInference(ExpressionContext context) throws StellaException {		
 		ExpressionContext subctx = createExtendedContext(context);
 		
 		return expression.inferType(subctx);
+	}
+	
+	@Override
+	protected StellaType doTypeInferenceConstrainted(ExpressionContext context) throws StellaException {		
+		ExpressionContext subctx = createExtendedContext(context);
+		
+		StellaType inferedType = expression.inferType(subctx);
+		
+		context.addConstraints(subctx.getConstraints());
+		
+		return inferedType;
 	}
 	
 	@Override

@@ -21,6 +21,13 @@ public class StellaRefType extends StellaType.StellaComplexType {
 	}
 	
 	@Override
+	public StellaType replaceType(StellaType replace, StellaType replacement) {
+		referencedType = referencedType.replaceType(replace, replacement);
+		
+		return this;
+	}
+	
+	@Override
 	protected List<? extends PatternExpr> checkPatternsExhaustivenessForType(Collection<? extends PatternExpr> patterns) throws StellaException {
 		return Collections.emptyList();
 	}

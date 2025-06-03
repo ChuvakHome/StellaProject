@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import ru.itmo.stella.typechecker.exception.StellaException;
 import ru.itmo.stella.typechecker.expr.pattern.PatternExpr;
@@ -55,6 +56,10 @@ public class StellaNatType extends StellaType.StellaPrimitiveType {
 			);	
 		
 		return missingPatterns;
+	}
+	
+	public int hashCode() {
+		return Objects.hash(StellaType.Tag.PRIMITIVE, PrimitiveTypeKind.NAT);
 	}
 	
 	public String toString() {
