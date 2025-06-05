@@ -423,7 +423,7 @@ public class BaseStellaTypechecker implements StellaTypechecker {
 				StellaType genericFnType = new StellaForAllType(typeVars, fnType);
 				
 				fnType.getArgumensTypes().forEach((argName, argType) -> subctx.add(argName, argType));
-				subctx.add(fnName, genericFnType);
+				context.add(fnName, genericFnType);
 				
 				ExpressionContext oldContext = context;
 				context = subctx;

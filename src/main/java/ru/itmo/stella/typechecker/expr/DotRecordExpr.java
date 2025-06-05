@@ -6,7 +6,7 @@ import java.util.Map;
 import ru.itmo.stella.typechecker.StellaLanguageExtension;
 import ru.itmo.stella.typechecker.constraint.StellaConstraint;
 import ru.itmo.stella.typechecker.exception.StellaException;
-import ru.itmo.stella.typechecker.exception.function.StellaNotAFunctionException;
+import ru.itmo.stella.typechecker.exception.record.StellaNotARecordException;
 import ru.itmo.stella.typechecker.exception.record.StellaUnexpectedFieldAccessException;
 import ru.itmo.stella.typechecker.type.StellaRecordType;
 import ru.itmo.stella.typechecker.type.StellaType;
@@ -46,7 +46,7 @@ public class DotRecordExpr extends StellaExpression {
 		
 		if (exprType.getTypeTag() != StellaType.Tag.RECORD) {
 			if (exprType.getTypeTag() != StellaType.Tag.TYPE_VAR || !context.isExtensionUsed(StellaLanguageExtension.TYPE_RECONSTRUCTION))
-				throw new StellaNotAFunctionException(exprType, recordExpr, this);
+				throw new StellaNotARecordException(exprType, recordExpr, this);
 			
 			return doTypeInferenceConstrainted(context);
 		}

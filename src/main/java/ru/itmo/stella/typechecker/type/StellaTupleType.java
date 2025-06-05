@@ -48,7 +48,7 @@ public class StellaTupleType extends StellaComplexType {
 				.map(p -> ((PatternTupleExpr) p).getPattern(0))
 				.toList();
 
-		return fieldTypes.get(0).checkPatternsExhaustivenessForType(firstComponentPatterns).stream()
+		return fieldTypes.get(0).checkPatternsExhaustiveness(firstComponentPatterns).stream()
 					.map(p -> new PatternTupleExpr(List.of(p)))
 					.toList();
 	}
@@ -67,7 +67,9 @@ public class StellaTupleType extends StellaComplexType {
 	
 	@Override
 	protected List<? extends PatternExpr> checkPatternsExhaustivenessForType(Collection<? extends PatternExpr> patterns) throws StellaException {
-		if (fieldTypes.size() == 1)
+		if (fieldTypes.isEmpty())
+			return List.of();
+		else if (fieldTypes.size() == 1)
 			return checkPatternsExhaustivenessSingle(patterns);
 		
 		Map<PatternExpr, List<PatternTupleExpr>> tupleComponentsPatterns = new HashMap<>();
@@ -95,7 +97,7 @@ public class StellaTupleType extends StellaComplexType {
 			List<PatternTupleExpr> componentsPatterns = tupleComponentEntry.getValue();
 			
 			missingPatterns.addAll(
-				subTupleType.checkPatternsExhaustivenessForType(componentsPatterns).stream()
+				subTupleType.checkPatternsExhaustiveness(componentsPatterns).stream()
 					.map(p -> {
 						List<PatternExpr> subtuplePatterns = new ArrayList<>(fieldTypes.size());
 						subtuplePatterns.add(firstCompPattern);
@@ -108,7 +110,7 @@ public class StellaTupleType extends StellaComplexType {
 		}
 		
 		missingPatterns.addAll(
-			getFieldType(0).checkPatternsExhaustivenessForType(tupleComponentsPatterns.keySet()).stream()
+			getFieldType(0).checkPatternsExhaustiveness(tupleComponentsPatterns.keySet()).stream()
 				.map(p -> {
 					int fieldsCount = fieldTypes.size();
 					List<PatternExpr> missingComponentsPattern = new ArrayList<>(fieldsCount);

@@ -69,7 +69,7 @@ public class StellaRecordType extends StellaComplexType {
 				.toList();
 
 		StellaType fieldType = onlyFieldEntry.getValue();
-		return fieldType.checkPatternsExhaustivenessForType(firstComponentPatterns).stream()
+		return fieldType.checkPatternsExhaustiveness(firstComponentPatterns).stream()
 					.map(p -> new PatternRecordExpr(Map.of(fieldName, p)))
 					.toList();
 	}
@@ -134,7 +134,7 @@ public class StellaRecordType extends StellaComplexType {
 			List<PatternRecordExpr> reducedRecordPatterns = recordFieldsEntry.getValue();
 			
 			missingPatterns.addAll(
-				subRecordType.checkPatternsExhaustivenessForType(reducedRecordPatterns).stream()
+				subRecordType.checkPatternsExhaustiveness(reducedRecordPatterns).stream()
 					.map(p -> {
 						Map<String, PatternExpr> subRecordFieldsPatterns = new HashMap<>(fieldsTypes.size());
 						subRecordFieldsPatterns.put(someFieldName, someFieldPattern);
@@ -146,7 +146,7 @@ public class StellaRecordType extends StellaComplexType {
 		}
 		
 		missingPatterns.addAll(
-			getFieldType(someFieldName).checkPatternsExhaustivenessForType(recordFieldsPatterns.keySet()).stream()
+			getFieldType(someFieldName).checkPatternsExhaustiveness(recordFieldsPatterns.keySet()).stream()
 				.map(p -> {
 					Map<String, PatternExpr> missingRecordFieldsPatterns = new HashMap<>();
 					

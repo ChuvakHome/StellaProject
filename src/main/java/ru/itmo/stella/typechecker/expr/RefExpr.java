@@ -23,8 +23,11 @@ public class RefExpr extends StellaExpression {
 		if (expected.getTypeTag() != StellaType.Tag.REF && expected.getTypeTag() != StellaType.Tag.TYPE_VAR)
 			throw new StellaUnexpectedTypeWhenUnifyingExpressionException(this, expected, inferType(context));
 		
-		if (expected.getTypeTag() == StellaType.Tag.TYPE_VAR)
+		if (expected.getTypeTag() == StellaType.Tag.TYPE_VAR) {
 			super.doTypeCheckConstrainted(context, expected);
+			
+			return;
+		}
 		
 		StellaRefType expectedRef = (StellaRefType) expected;
 		

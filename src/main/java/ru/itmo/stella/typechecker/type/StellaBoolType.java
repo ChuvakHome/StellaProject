@@ -31,8 +31,6 @@ public class StellaBoolType extends StellaType.StellaPrimitiveType {
 						falsePattern = true;
 					
 					break;
-				case VAR:
-					return Collections.emptyList();
 				default:
 					break;
 			}

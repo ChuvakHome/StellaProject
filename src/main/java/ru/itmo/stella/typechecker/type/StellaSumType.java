@@ -66,7 +66,7 @@ public class StellaSumType extends StellaType.StellaComplexType {
 		if (inlPatterns.isEmpty())
 			missingPatterns.add(new PatternInlExpr(PatternExpr.STUB_PATTERN));
 		else {
-			List<? extends PatternExpr> missingInlPatterns = left.checkPatternsExhaustivenessForType(inlPatterns);
+			List<? extends PatternExpr> missingInlPatterns = left.checkPatternsExhaustiveness(inlPatterns);
 			
 			for (PatternExpr missingInlPattern: missingInlPatterns)
 				missingPatterns.add(new PatternInlExpr(missingInlPattern));
@@ -75,7 +75,7 @@ public class StellaSumType extends StellaType.StellaComplexType {
 		if (inrPatterns.isEmpty())
 			missingPatterns.add(new PatternInrExpr(PatternExpr.STUB_PATTERN));
 		else {
-			List<? extends PatternExpr> missingInrPatterns = right.checkPatternsExhaustivenessForType(inrPatterns);
+			List<? extends PatternExpr> missingInrPatterns = right.checkPatternsExhaustiveness(inrPatterns);
 			
 			for (PatternExpr missingInrPattern: missingInrPatterns)
 				missingPatterns.add(new PatternInrExpr(missingInrPattern));

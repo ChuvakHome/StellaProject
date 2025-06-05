@@ -94,7 +94,7 @@ public class StellaListType extends StellaType.StellaComplexType {
 					.forEach(missingPatterns::add);
 			}
 			
-			elementType.checkPatternsExhaustivenessForType(consPatterns.keySet())
+			elementType.checkPatternsExhaustiveness(consPatterns.keySet())
 				.stream()
 				.map(missingHeadPattern -> new PatternConsExpr(missingHeadPattern, PatternExpr.STUB_PATTERN))
 				.forEach(missingPatterns::add);

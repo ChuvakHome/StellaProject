@@ -89,7 +89,7 @@ public class StellaVariantType extends StellaComplexType {
 				missingPatterns.add(new PatternVariantExpr(label, PatternExpr.STUB_PATTERN));
 			else
 				missingPatterns.addAll(
-						getLabelType(label).checkPatternsExhaustivenessForType(labelPatterns)
+						getLabelType(label).checkPatternsExhaustiveness(labelPatterns)
 								.stream()
 								.map(p -> new PatternVariantExpr(label, p))
 								.toList()

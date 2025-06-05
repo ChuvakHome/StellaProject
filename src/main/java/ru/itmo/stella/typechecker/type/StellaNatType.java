@@ -2,7 +2,6 @@ package ru.itmo.stella.typechecker.type;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,8 +29,6 @@ public class StellaNatType extends StellaType.StellaPrimitiveType {
 					PatternSuccExpr succPattern = (PatternSuccExpr) pattern;
 					succPatterns.add(succPattern.getSuccPattern());
 					break;
-				case VAR:
-					return Collections.emptyList();
 				default:
 					break;
 			}
@@ -49,7 +46,7 @@ public class StellaNatType extends StellaType.StellaPrimitiveType {
 			missingPatterns.add(new PatternSuccExpr(PatternExpr.STUB_PATTERN));
 		else
 			missingPatterns.addAll(
-					StellaType.Primitives.NAT.checkPatternsExhaustivenessForType(succPatterns)
+					StellaType.Primitives.NAT.checkPatternsExhaustiveness(succPatterns)
 					.stream()
 					.map(p -> new PatternSuccExpr(p))
 					.toList()

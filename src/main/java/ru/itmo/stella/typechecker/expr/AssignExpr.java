@@ -28,13 +28,13 @@ public class AssignExpr extends StellaExpression {
 	
 	@Override
 	protected void doTypeCheckConstrainted(ExpressionContext context, StellaType expected) throws StellaException {
-		StellaType lhsType = lhs.inferType(context);
-		
 		StellaType referencedType = getCachedType(context); 
+		
+		lhs.checkType(context, new StellaRefType(referencedType));
+		rhs.checkType(context, referencedType);
 		
 		context.addConstraints(
 					List.of(
-						new StellaConstraint(lhsType, new StellaRefType(referencedType), lhs),
 						new StellaConstraint(StellaType.Primitives.UNIT, expected, this)
 					)
 				);
